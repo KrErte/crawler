@@ -1057,9 +1057,9 @@
                 ? '<span class="tag tag-applied">Kandideeritud</span>'
                 : '';
 
-            const applyBtn = state.profileSaved && !applied
-                ? `<button class="apply-btn" onclick="event.stopPropagation(); startApply(${escAttr(JSON.stringify(job))})">Kandideeri</button>`
-                : '';
+            const applyBtn = applied
+                ? ''
+                : `<button class="apply-btn" onclick="event.stopPropagation(); handleApply(${escAttr(JSON.stringify(job))})">Kandideeri</button>`;
 
             return `
                 <div class="job-card">
@@ -1094,6 +1094,26 @@
         }
 
         // ── Apply Modal ───────────────────────────────────────────────────
+
+        function handleApply(job) {
+            if (!state.profileSaved) {
+                // Open profile panel and highlight it
+                const panel = $('profile-panel');
+                const btn = $('profile-toggle');
+                if (!panel.classList.contains('open')) {
+                    panel.classList.add('open');
+                    btn.classList.add('open');
+                }
+                btn.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                // Flash the profile section
+                btn.style.borderColor = 'var(--pink)';
+                $('profile-msg').textContent = 'Taida ja salvesta profiil enne kandideerimist!';
+                $('profile-msg').style.color = 'var(--pink)';
+                setTimeout(() => { btn.style.borderColor = ''; }, 2000);
+                return;
+            }
+            startApply(job);
+        }
 
         async function startApply(job) {
             const modal = $('apply-modal');
