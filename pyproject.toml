@@ -1,0 +1,30 @@
+[project]
+name = "ee-it-jobs"
+version = "0.1.0"
+description = "Estonian IT job listings crawler"
+requires-python = ">=3.11"
+dependencies = [
+    "httpx[http2]>=0.27",
+    "selectolax>=0.3",
+    "beautifulsoup4>=4.12",
+    "playwright>=1.40",
+    "pydantic>=2.5",
+    "rich>=13.0",
+    "click>=8.1",
+    "loguru>=0.7",
+    "fastapi>=0.110",
+    "uvicorn[standard]>=0.27",
+    "jinja2>=3.1",
+    "pdfplumber>=0.10",
+    "python-multipart>=0.0.9",
+]
+
+[project.scripts]
+crawl = "ee_it_jobs.cli:main"
+
+[build-system]
+requires = ["setuptools>=68.0"]
+build-backend = "setuptools.build_meta"
+
+[tool.setuptools.packages.find]
+where = ["src"]

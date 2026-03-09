@@ -1,0 +1,10 @@
+[crawler]
+rate_limit = 2.0          # requests per second
+max_concurrency = 4       # max concurrent scrapers
+request_timeout = 30.0    # seconds
+output_dir = "output"
+user_agent = "EE-IT-Jobs-Crawler/0.1 (+https://github.com)"
+
+[server]
+host = "127.0.0.1"
+port = 8000

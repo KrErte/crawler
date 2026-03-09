@@ -1,0 +1,1386 @@
+<!DOCTYPE html>
+<html lang="et">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Eesti IT Tööpakkumised</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        :root {
+            --bg: #0f172a;
+            --surface: #1e293b;
+            --surface-hover: #334155;
+            --border: #334155;
+            --text: #e2e8f0;
+            --text-dim: #94a3b8;
+            --accent: #38bdf8;
+            --accent-dim: #0ea5e9;
+            --green: #4ade80;
+            --orange: #fb923c;
+            --purple: #a78bfa;
+            --pink: #f472b6;
+            --radius: 8px;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            min-height: 100vh;
+        }
+
+        .header {
+            background: var(--surface);
+            border-bottom: 1px solid var(--border);
+            padding: 1.5rem 2rem;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+
+        .header-inner {
+            max-width: 1400px;
+            margin: 0 auto;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 1rem;
+            flex-wrap: wrap;
+        }
+
+        .logo {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: var(--accent);
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .logo span { color: var(--text); }
+
+        .stats {
+            display: flex;
+            gap: 1.5rem;
+            color: var(--text-dim);
+            font-size: 0.875rem;
+        }
+
+        .stats strong { color: var(--accent); font-size: 1.25rem; }
+
+        .controls {
+            max-width: 1400px;
+            margin: 1.5rem auto;
+            padding: 0 2rem;
+            display: flex;
+            gap: 0.75rem;
+            flex-wrap: wrap;
+            align-items: center;
+        }
+
+        .search-box {
+            flex: 1;
+            min-width: 250px;
+            position: relative;
+        }
+
+        .search-box input {
+            width: 100%;
+            padding: 0.75rem 1rem 0.75rem 2.5rem;
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            color: var(--text);
+            font-size: 0.9rem;
+            outline: none;
+            transition: border-color 0.2s;
+        }
+
+        .search-box input:focus { border-color: var(--accent); }
+
+        .search-box::before {
+            content: '\1F50D';
+            position: absolute;
+            left: 0.75rem;
+            top: 50%;
+            transform: translateY(-50%);
+            font-size: 0.9rem;
+        }
+
+        select {
+            padding: 0.75rem 1rem;
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            color: var(--text);
+            font-size: 0.875rem;
+            outline: none;
+            cursor: pointer;
+            min-width: 160px;
+        }
+
+        select:focus { border-color: var(--accent); }
+
+        .main {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 0 2rem 2rem;
+        }
+
+        .job-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(380px, 1fr));
+            gap: 1rem;
+        }
+
+        .job-card {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            padding: 1.25rem;
+            transition: border-color 0.2s, transform 0.15s;
+            display: flex;
+            flex-direction: column;
+            gap: 0.75rem;
+        }
+
+        .job-card:hover {
+            border-color: var(--accent);
+            transform: translateY(-2px);
+        }
+
+        .job-title {
+            font-size: 1.05rem;
+            font-weight: 600;
+            color: var(--text);
+            line-height: 1.3;
+        }
+
+        .job-company {
+            font-size: 0.95rem;
+            color: var(--accent);
+            font-weight: 500;
+        }
+
+        .job-meta {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.5rem;
+            font-size: 0.8rem;
+        }
+
+        .tag {
+            padding: 0.2rem 0.6rem;
+            border-radius: 999px;
+            font-weight: 500;
+        }
+
+        .tag-location { background: rgba(56, 189, 248, 0.15); color: var(--accent); }
+        .tag-source { background: rgba(167, 139, 250, 0.15); color: var(--purple); }
+        .tag-remote { background: rgba(74, 222, 128, 0.15); color: var(--green); }
+        .tag-hybrid { background: rgba(251, 146, 60, 0.15); color: var(--orange); }
+        .tag-onsite { background: rgba(244, 114, 182, 0.15); color: var(--pink); }
+        .tag-dept { background: rgba(148, 163, 184, 0.1); color: var(--text-dim); }
+        .tag-applied { background: rgba(74, 222, 128, 0.2); color: var(--green); font-weight: 600; }
+
+        .job-snippet {
+            font-size: 0.825rem;
+            color: var(--text-dim);
+            line-height: 1.5;
+            display: -webkit-box;
+            -webkit-line-clamp: 2;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+        }
+
+        .job-date {
+            font-size: 0.75rem;
+            color: var(--text-dim);
+        }
+
+        .job-footer {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-top: auto;
+            padding-top: 0.5rem;
+            gap: 0.5rem;
+        }
+
+        .job-buttons {
+            display: flex;
+            gap: 0.4rem;
+        }
+
+        .apply-btn, .open-btn {
+            display: inline-block;
+            padding: 0.45rem 0.9rem;
+            border-radius: var(--radius);
+            font-size: 0.8rem;
+            font-weight: 600;
+            cursor: pointer;
+            border: none;
+            transition: background 0.2s, opacity 0.2s;
+            text-decoration: none;
+        }
+
+        .apply-btn {
+            background: var(--accent-dim);
+            color: #fff;
+        }
+
+        .apply-btn:hover { background: var(--accent); }
+
+        .open-btn {
+            background: transparent;
+            border: 1px solid var(--border);
+            color: var(--text-dim);
+        }
+
+        .open-btn:hover { border-color: var(--accent); color: var(--text); }
+
+        .empty-state {
+            text-align: center;
+            padding: 4rem 2rem;
+            color: var(--text-dim);
+        }
+
+        .empty-state h2 { font-size: 1.25rem; margin-bottom: 0.5rem; color: var(--text); }
+
+        .loading {
+            text-align: center;
+            padding: 4rem;
+            color: var(--text-dim);
+        }
+
+        .spinner {
+            display: inline-block;
+            width: 2rem;
+            height: 2rem;
+            border: 3px solid var(--border);
+            border-top-color: var(--accent);
+            border-radius: 50%;
+            animation: spin 0.8s linear infinite;
+            margin-bottom: 1rem;
+        }
+
+        @keyframes spin { to { transform: rotate(360deg); } }
+
+        .sort-btn, .refresh-btn {
+            padding: 0.75rem 1rem;
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            color: var(--text);
+            font-size: 0.875rem;
+            cursor: pointer;
+            transition: border-color 0.2s, background 0.2s;
+        }
+
+        .sort-btn:hover { border-color: var(--accent); }
+
+        .refresh-btn {
+            background: var(--accent-dim);
+            border-color: var(--accent);
+            color: #fff;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 0.4rem;
+        }
+
+        .refresh-btn:hover { background: var(--accent); }
+
+        .refresh-btn:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+        }
+
+        .refresh-btn .btn-spinner {
+            display: inline-block;
+            width: 0.9rem;
+            height: 0.9rem;
+            border: 2px solid rgba(255,255,255,0.3);
+            border-top-color: #fff;
+            border-radius: 50%;
+            animation: spin 0.7s linear infinite;
+        }
+
+        /* CV Match section */
+        .cv-section {
+            max-width: 1400px;
+            margin: 0 auto 1.5rem;
+            padding: 0 2rem;
+        }
+
+        .cv-upload-bar {
+            background: var(--surface);
+            border: 2px dashed var(--border);
+            border-radius: var(--radius);
+            padding: 1rem 1.5rem;
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            flex-wrap: wrap;
+            transition: border-color 0.2s;
+        }
+
+        .cv-upload-bar.dragover {
+            border-color: var(--accent);
+            background: rgba(56, 189, 248, 0.05);
+        }
+
+        .cv-upload-bar label {
+            font-size: 0.9rem;
+            color: var(--text-dim);
+            cursor: pointer;
+            flex: 1;
+        }
+
+        .cv-upload-bar label strong { color: var(--text); }
+
+        .cv-file-input { display: none; }
+
+        .cv-btn {
+            padding: 0.6rem 1.2rem;
+            background: var(--green);
+            border: none;
+            border-radius: var(--radius);
+            color: #000;
+            font-size: 0.875rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: opacity 0.2s;
+        }
+
+        .cv-btn:hover { opacity: 0.85; }
+        .cv-btn:disabled { opacity: 0.5; cursor: not-allowed; }
+
+        .cv-filename {
+            font-size: 0.8rem;
+            color: var(--accent);
+            font-weight: 500;
+        }
+
+        .match-results {
+            margin-top: 1rem;
+        }
+
+        .match-header {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            padding: 1.25rem;
+            margin-bottom: 1rem;
+        }
+
+        .match-header h3 {
+            font-size: 1.1rem;
+            margin-bottom: 0.75rem;
+            color: var(--green);
+        }
+
+        .match-header .skills-list {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.4rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .match-header .skill-tag {
+            padding: 0.2rem 0.5rem;
+            background: rgba(74, 222, 128, 0.15);
+            color: var(--green);
+            border-radius: 999px;
+            font-size: 0.8rem;
+            font-weight: 500;
+        }
+
+        .match-header .match-info {
+            font-size: 0.85rem;
+            color: var(--text-dim);
+        }
+
+        .match-close {
+            float: right;
+            background: none;
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            color: var(--text-dim);
+            padding: 0.3rem 0.7rem;
+            cursor: pointer;
+            font-size: 0.8rem;
+        }
+
+        .match-close:hover { border-color: var(--pink); color: var(--pink); }
+
+        .match-score-badge {
+            display: inline-block;
+            padding: 0.2rem 0.6rem;
+            border-radius: 999px;
+            font-size: 0.8rem;
+            font-weight: 700;
+            margin-left: 0.5rem;
+        }
+
+        .match-high { background: rgba(74, 222, 128, 0.2); color: var(--green); }
+        .match-mid { background: rgba(251, 146, 60, 0.2); color: var(--orange); }
+        .match-low { background: rgba(148, 163, 184, 0.15); color: var(--text-dim); }
+
+        .matched-skill-tag {
+            padding: 0.15rem 0.4rem;
+            background: rgba(74, 222, 128, 0.12);
+            color: var(--green);
+            border-radius: 999px;
+            font-size: 0.7rem;
+            font-weight: 500;
+        }
+
+        /* Profile section */
+        .profile-section {
+            max-width: 1400px;
+            margin: 0 auto 1rem;
+            padding: 0 2rem;
+        }
+
+        .profile-toggle {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            padding: 0.75rem 1.25rem;
+            color: var(--text);
+            font-size: 0.9rem;
+            cursor: pointer;
+            width: 100%;
+            text-align: left;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            transition: border-color 0.2s;
+        }
+
+        .profile-toggle:hover { border-color: var(--accent); }
+
+        .profile-toggle .toggle-arrow {
+            transition: transform 0.2s;
+            font-size: 0.8rem;
+            color: var(--text-dim);
+        }
+
+        .profile-toggle.open .toggle-arrow { transform: rotate(180deg); }
+
+        .profile-toggle .profile-status {
+            font-size: 0.8rem;
+            margin-left: 0.75rem;
+        }
+
+        .profile-toggle .profile-status.saved { color: var(--green); }
+        .profile-toggle .profile-status.empty { color: var(--text-dim); }
+
+        .profile-panel {
+            display: none;
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-top: none;
+            border-radius: 0 0 var(--radius) var(--radius);
+            padding: 1.25rem;
+        }
+
+        .profile-panel.open { display: block; }
+
+        .profile-form {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 0.75rem;
+        }
+
+        .profile-form .full-width { grid-column: 1 / -1; }
+
+        .profile-form label {
+            font-size: 0.8rem;
+            color: var(--text-dim);
+            margin-bottom: 0.25rem;
+            display: block;
+        }
+
+        .profile-form input, .profile-form textarea {
+            width: 100%;
+            padding: 0.6rem 0.8rem;
+            background: var(--bg);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            color: var(--text);
+            font-size: 0.875rem;
+            outline: none;
+            font-family: inherit;
+            transition: border-color 0.2s;
+        }
+
+        .profile-form input:focus, .profile-form textarea:focus {
+            border-color: var(--accent);
+        }
+
+        .profile-form textarea { resize: vertical; min-height: 60px; }
+
+        .profile-actions {
+            grid-column: 1 / -1;
+            display: flex;
+            gap: 0.75rem;
+            align-items: center;
+            margin-top: 0.25rem;
+        }
+
+        .profile-save-btn {
+            padding: 0.6rem 1.5rem;
+            background: var(--accent-dim);
+            border: none;
+            border-radius: var(--radius);
+            color: #fff;
+            font-size: 0.875rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+
+        .profile-save-btn:hover { background: var(--accent); }
+
+        .profile-cv-upload {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .profile-cv-btn {
+            padding: 0.5rem 1rem;
+            background: transparent;
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            color: var(--text-dim);
+            font-size: 0.825rem;
+            cursor: pointer;
+            transition: border-color 0.2s;
+        }
+
+        .profile-cv-btn:hover { border-color: var(--accent); color: var(--text); }
+
+        .profile-cv-status {
+            font-size: 0.8rem;
+            color: var(--text-dim);
+        }
+
+        .profile-cv-status.uploaded { color: var(--green); }
+
+        .profile-msg {
+            font-size: 0.8rem;
+            margin-left: auto;
+        }
+
+        /* Apply modal */
+        .modal-overlay {
+            display: none;
+            position: fixed;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background: rgba(0, 0, 0, 0.7);
+            z-index: 200;
+            justify-content: center;
+            align-items: center;
+            padding: 2rem;
+        }
+
+        .modal-overlay.open { display: flex; }
+
+        .modal {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            max-width: 900px;
+            width: 100%;
+            max-height: 90vh;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .modal-header {
+            padding: 1.25rem 1.5rem;
+            border-bottom: 1px solid var(--border);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .modal-header h3 {
+            font-size: 1.05rem;
+            color: var(--text);
+        }
+
+        .modal-close {
+            background: none;
+            border: none;
+            color: var(--text-dim);
+            font-size: 1.5rem;
+            cursor: pointer;
+            padding: 0 0.25rem;
+            line-height: 1;
+        }
+
+        .modal-close:hover { color: var(--pink); }
+
+        .modal-body {
+            padding: 1.5rem;
+            overflow-y: auto;
+            flex: 1;
+            text-align: center;
+        }
+
+        .modal-body .screenshot-img {
+            max-width: 100%;
+            border-radius: var(--radius);
+            border: 1px solid var(--border);
+            margin: 0.75rem 0;
+        }
+
+        .modal-body .modal-status {
+            font-size: 0.9rem;
+            color: var(--text-dim);
+            margin-bottom: 1rem;
+        }
+
+        .modal-body .modal-status.success { color: var(--green); }
+        .modal-body .modal-status.error { color: var(--pink); }
+
+        .modal-footer {
+            padding: 1rem 1.5rem;
+            border-top: 1px solid var(--border);
+            display: flex;
+            justify-content: flex-end;
+            gap: 0.75rem;
+        }
+
+        .modal-btn {
+            padding: 0.6rem 1.5rem;
+            border: none;
+            border-radius: var(--radius);
+            font-size: 0.875rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background 0.2s, opacity 0.2s;
+        }
+
+        .modal-btn:disabled { opacity: 0.5; cursor: not-allowed; }
+
+        .modal-btn-confirm {
+            background: var(--green);
+            color: #000;
+        }
+
+        .modal-btn-confirm:hover:not(:disabled) { opacity: 0.85; }
+
+        .modal-btn-cancel {
+            background: transparent;
+            border: 1px solid var(--border);
+            color: var(--text-dim);
+        }
+
+        .modal-btn-cancel:hover { border-color: var(--pink); color: var(--pink); }
+
+        @media (max-width: 768px) {
+            .header { padding: 1rem; }
+            .controls { padding: 0 1rem; }
+            .main { padding: 0 1rem 1rem; }
+            .job-grid { grid-template-columns: 1fr; }
+            .header-inner { flex-direction: column; align-items: flex-start; }
+            .profile-form { grid-template-columns: 1fr; }
+            .profile-section, .cv-section { padding: 0 1rem; }
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <div class="header-inner">
+            <div class="logo">
+                <span>Eesti IT</span> Jobs
+            </div>
+            <div class="stats">
+                <div><strong id="total-count">-</strong> pakkumist</div>
+                <div><strong id="company-count">-</strong> ettevottet</div>
+                <div id="scraped-at" style="align-self: center;"></div>
+            </div>
+        </div>
+    </div>
+
+    <div class="controls">
+        <div class="search-box">
+            <input type="text" id="search" placeholder="Otsi ametinimetust, ettevotet, asukohta...">
+        </div>
+        <select id="filter-company">
+            <option value="">Koik ettevotted</option>
+        </select>
+        <select id="filter-source">
+            <option value="">Koik allikad</option>
+        </select>
+        <select id="filter-workplace">
+            <option value="all">Koik tooviisid</option>
+            <option value="remote">Remote</option>
+            <option value="hybrid">Hybrid</option>
+            <option value="onsite">Onsite</option>
+        </select>
+        <button class="sort-btn" id="sort-btn" title="Sort">A-Z &#8597;</button>
+        <button class="refresh-btn" id="refresh-btn" title="Scrape uuesti">&#x21bb; Uuenda</button>
+    </div>
+
+    <!-- Profile section -->
+    <div class="profile-section">
+        <button class="profile-toggle" id="profile-toggle">
+            <span>Minu profiil (auto-kandideerimine)</span>
+            <span>
+                <span class="profile-status empty" id="profile-status-badge">Taitamata</span>
+                <span class="toggle-arrow">&#9660;</span>
+            </span>
+        </button>
+        <div class="profile-panel" id="profile-panel">
+            <div class="profile-form">
+                <div>
+                    <label for="pf-firstname">Eesnimi</label>
+                    <input type="text" id="pf-firstname" placeholder="Mari">
+                </div>
+                <div>
+                    <label for="pf-lastname">Perenimi</label>
+                    <input type="text" id="pf-lastname" placeholder="Maasikas">
+                </div>
+                <div>
+                    <label for="pf-email">E-mail</label>
+                    <input type="email" id="pf-email" placeholder="mari@email.com">
+                </div>
+                <div>
+                    <label for="pf-phone">Telefon</label>
+                    <input type="tel" id="pf-phone" placeholder="+372 5555 1234">
+                </div>
+                <div class="full-width">
+                    <label for="pf-linkedin">LinkedIn URL</label>
+                    <input type="url" id="pf-linkedin" placeholder="https://linkedin.com/in/marimaasikas">
+                </div>
+                <div class="full-width">
+                    <label for="pf-coverletter">Vaikimisi kaaskiri</label>
+                    <textarea id="pf-coverletter" rows="3" placeholder="Lühike kaaskiri, mis lisatakse automaatselt..."></textarea>
+                </div>
+                <div class="profile-actions">
+                    <button class="profile-save-btn" id="profile-save-btn">Salvesta profiil</button>
+                    <div class="profile-cv-upload">
+                        <input type="file" id="profile-cv-input" accept=".pdf" style="display:none">
+                        <button class="profile-cv-btn" id="profile-cv-btn">Lae CV (PDF)</button>
+                        <span class="profile-cv-status" id="profile-cv-status"></span>
+                    </div>
+                    <span class="profile-msg" id="profile-msg"></span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="cv-section">
+        <div class="cv-upload-bar" id="cv-dropzone">
+            <label for="cv-input">
+                <strong>Lae ules oma CV (PDF)</strong> — leiame sulle parimad matchid
+            </label>
+            <span class="cv-filename" id="cv-filename"></span>
+            <input type="file" id="cv-input" class="cv-file-input" accept=".pdf">
+            <button class="cv-btn" id="cv-btn" disabled>Leia matchid</button>
+        </div>
+        <div id="match-results"></div>
+    </div>
+
+    <div class="main">
+        <div id="content">
+            <div class="loading">
+                <div class="spinner"></div>
+                <p>Laen tööpakkumisi...</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Apply modal -->
+    <div class="modal-overlay" id="apply-modal">
+        <div class="modal">
+            <div class="modal-header">
+                <h3 id="apply-modal-title">Kandideerimine</h3>
+                <button class="modal-close" id="apply-modal-close">&times;</button>
+            </div>
+            <div class="modal-body" id="apply-modal-body">
+                <div class="loading">
+                    <div class="spinner"></div>
+                    <p>Taidan vormi...</p>
+                </div>
+            </div>
+            <div class="modal-footer" id="apply-modal-footer" style="display:none">
+                <button class="modal-btn modal-btn-cancel" id="apply-cancel-btn">Tuhista</button>
+                <button class="modal-btn modal-btn-confirm" id="apply-confirm-btn">Kinnita ja saada</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const state = {
+            jobs: [],
+            filtered: [],
+            sortAsc: true,
+            sortField: 'company',
+            profileSaved: false,
+            applications: [],
+            currentSessionId: null,
+        };
+
+        const $ = id => document.getElementById(id);
+
+        // ── Init ──────────────────────────────────────────────────────────
+
+        async function init() {
+            const [jobsRes, filtersRes] = await Promise.all([
+                fetch('/api/jobs').then(r => r.json()),
+                fetch('/api/filters').then(r => r.json()),
+            ]);
+
+            state.jobs = jobsRes.jobs || [];
+            state.filtered = [...state.jobs];
+
+            $('total-count').textContent = jobsRes.total || 0;
+            $('company-count').textContent = filtersRes.companies?.length || 0;
+
+            if (jobsRes.scraped_at) {
+                const d = new Date(jobsRes.scraped_at);
+                $('scraped-at').textContent = `Uuendatud: ${d.toLocaleDateString('et-EE')} ${d.toLocaleTimeString('et-EE', {hour:'2-digit', minute:'2-digit'})}`;
+            }
+
+            // Populate filters
+            const companySelect = $('filter-company');
+            (filtersRes.companies || []).forEach(c => {
+                const opt = document.createElement('option');
+                opt.value = c;
+                opt.textContent = c;
+                companySelect.appendChild(opt);
+            });
+
+            const sourceSelect = $('filter-source');
+            (filtersRes.sources || []).forEach(s => {
+                const opt = document.createElement('option');
+                opt.value = s;
+                opt.textContent = s;
+                sourceSelect.appendChild(opt);
+            });
+
+            await loadProfile();
+            await loadApplications();
+            applyFilters();
+        }
+
+        // ── Profile ───────────────────────────────────────────────────────
+
+        async function loadProfile() {
+            try {
+                const res = await fetch('/api/profile');
+                const data = await res.json();
+                if (data.email) {
+                    $('pf-firstname').value = data.first_name || '';
+                    $('pf-lastname').value = data.last_name || '';
+                    $('pf-email').value = data.email || '';
+                    $('pf-phone').value = data.phone || '';
+                    $('pf-linkedin').value = data.linkedin_url || '';
+                    $('pf-coverletter').value = data.cover_letter || '';
+                    state.profileSaved = true;
+                    updateProfileBadge();
+                }
+                if (data.has_cv) {
+                    $('profile-cv-status').textContent = 'CV uleslaetud';
+                    $('profile-cv-status').className = 'profile-cv-status uploaded';
+                }
+            } catch (e) {}
+        }
+
+        function updateProfileBadge() {
+            const badge = $('profile-status-badge');
+            if (state.profileSaved) {
+                badge.textContent = 'Salvestatud';
+                badge.className = 'profile-status saved';
+            } else {
+                badge.textContent = 'Taitamata';
+                badge.className = 'profile-status empty';
+            }
+        }
+
+        $('profile-toggle').addEventListener('click', () => {
+            const panel = $('profile-panel');
+            const btn = $('profile-toggle');
+            panel.classList.toggle('open');
+            btn.classList.toggle('open');
+        });
+
+        $('profile-save-btn').addEventListener('click', async () => {
+            const body = {
+                first_name: $('pf-firstname').value.trim(),
+                last_name: $('pf-lastname').value.trim(),
+                email: $('pf-email').value.trim(),
+                phone: $('pf-phone').value.trim(),
+                linkedin_url: $('pf-linkedin').value.trim(),
+                cover_letter: $('pf-coverletter').value.trim(),
+            };
+
+            if (!body.email) {
+                $('profile-msg').textContent = 'E-mail on kohustuslik!';
+                $('profile-msg').style.color = 'var(--pink)';
+                return;
+            }
+
+            try {
+                const res = await fetch('/api/profile', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(body),
+                });
+                const data = await res.json();
+                if (data.ok) {
+                    state.profileSaved = true;
+                    updateProfileBadge();
+                    $('profile-msg').textContent = 'Salvestatud!';
+                    $('profile-msg').style.color = 'var(--green)';
+                    setTimeout(() => $('profile-msg').textContent = '', 3000);
+                }
+            } catch (e) {
+                $('profile-msg').textContent = 'Viga salvestamisel';
+                $('profile-msg').style.color = 'var(--pink)';
+            }
+        });
+
+        // CV upload in profile
+        $('profile-cv-btn').addEventListener('click', () => $('profile-cv-input').click());
+
+        $('profile-cv-input').addEventListener('change', async (e) => {
+            const file = e.target.files[0];
+            if (!file) return;
+            const formData = new FormData();
+            formData.append('file', file);
+
+            try {
+                const res = await fetch('/api/profile/cv', { method: 'POST', body: formData });
+                const data = await res.json();
+                if (data.ok) {
+                    $('profile-cv-status').textContent = `CV: ${data.filename}`;
+                    $('profile-cv-status').className = 'profile-cv-status uploaded';
+                } else {
+                    $('profile-cv-status').textContent = data.error || 'Viga';
+                    $('profile-cv-status').className = 'profile-cv-status';
+                }
+            } catch (e) {
+                $('profile-cv-status').textContent = 'Viga uleslaadimisel';
+            }
+        });
+
+        // ── Applications ──────────────────────────────────────────────────
+
+        async function loadApplications() {
+            try {
+                const res = await fetch('/api/applications');
+                const data = await res.json();
+                state.applications = data.applications || [];
+            } catch (e) {
+                state.applications = [];
+            }
+        }
+
+        function isApplied(jobUrl) {
+            return state.applications.some(a => a.url === jobUrl);
+        }
+
+        // ── Filters & Rendering ───────────────────────────────────────────
+
+        function applyFilters() {
+            const search = $('search').value.toLowerCase();
+            const company = $('filter-company').value;
+            const source = $('filter-source').value;
+            const workplace = $('filter-workplace').value;
+
+            state.filtered = state.jobs.filter(j => {
+                if (search && !(
+                    (j.title || '').toLowerCase().includes(search) ||
+                    (j.company || '').toLowerCase().includes(search) ||
+                    (j.location || '').toLowerCase().includes(search) ||
+                    (j.department || '').toLowerCase().includes(search)
+                )) return false;
+                if (company && j.company !== company) return false;
+                if (source && j.source !== source) return false;
+                if (workplace && workplace !== 'all' && j.workplace_type !== workplace) return false;
+                return true;
+            });
+
+            sortJobs();
+            render();
+        }
+
+        function sortJobs() {
+            const field = state.sortField;
+            const dir = state.sortAsc ? 1 : -1;
+            state.filtered.sort((a, b) => {
+                const va = (a[field] || '').toLowerCase();
+                const vb = (b[field] || '').toLowerCase();
+                return va < vb ? -dir : va > vb ? dir : 0;
+            });
+        }
+
+        function render() {
+            const container = $('content');
+            $('total-count').textContent = state.filtered.length;
+
+            if (state.filtered.length === 0) {
+                container.innerHTML = `
+                    <div class="empty-state">
+                        <h2>Toopakkumisi ei leitud</h2>
+                        <p>Proovi muuta filtreid voi kaivita esmalt crawler: <code>crawl scrape</code></p>
+                    </div>`;
+                return;
+            }
+
+            container.innerHTML = `<div class="job-grid">${state.filtered.map(renderCard).join('')}</div>`;
+        }
+
+        function renderCard(job) {
+            const wpClass = {
+                remote: 'tag-remote',
+                hybrid: 'tag-hybrid',
+                onsite: 'tag-onsite',
+            }[job.workplace_type] || '';
+            const wpLabel = {
+                remote: 'Remote',
+                hybrid: 'Hybrid',
+                onsite: 'Onsite',
+            }[job.workplace_type] || '';
+
+            const applied = isApplied(job.url);
+            const appliedTag = applied
+                ? '<span class="tag tag-applied">Kandideeritud</span>'
+                : '';
+
+            const applyBtn = state.profileSaved && !applied
+                ? `<button class="apply-btn" onclick="event.stopPropagation(); startApply(${escAttr(JSON.stringify(job))})">Kandideeri</button>`
+                : '';
+
+            return `
+                <div class="job-card">
+                    <div class="job-title">${escHtml(job.title)}</div>
+                    <div class="job-company">${escHtml(job.company)}</div>
+                    <div class="job-meta">
+                        <span class="tag tag-location">${escHtml(job.location)}</span>
+                        <span class="tag tag-source">${escHtml(job.source)}</span>
+                        ${wpLabel ? `<span class="tag ${wpClass}">${wpLabel}</span>` : ''}
+                        ${job.department ? `<span class="tag tag-dept">${escHtml(job.department)}</span>` : ''}
+                        ${job.salary_text ? `<span class="tag tag-remote">${escHtml(job.salary_text)}</span>` : ''}
+                        ${appliedTag}
+                    </div>
+                    ${job.description_snippet ? `<div class="job-snippet">${escHtml(job.description_snippet)}</div>` : ''}
+                    <div class="job-footer">
+                        ${job.date_posted ? `<span class="job-date">Lisatud: ${job.date_posted}</span>` : '<span></span>'}
+                        <div class="job-buttons">
+                            ${applyBtn}
+                            <a class="open-btn" href="${escHtml(job.url)}" target="_blank" rel="noopener" onclick="event.stopPropagation()">Ava leht &#8599;</a>
+                        </div>
+                    </div>
+                </div>`;
+        }
+
+        function escHtml(s) {
+            if (!s) return '';
+            return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+        }
+
+        function escAttr(s) {
+            return s.replace(/&/g,'&amp;').replace(/'/g,'&#39;').replace(/"/g,'&quot;');
+        }
+
+        // ── Apply Modal ───────────────────────────────────────────────────
+
+        async function startApply(job) {
+            const modal = $('apply-modal');
+            const body = $('apply-modal-body');
+            const footer = $('apply-modal-footer');
+
+            // Show modal with loading
+            modal.classList.add('open');
+            $('apply-modal-title').textContent = `Kandideerimine: ${job.title} — ${job.company}`;
+            body.innerHTML = '<div class="loading"><div class="spinner"></div><p>Taidan vormi...</p></div>';
+            footer.style.display = 'none';
+            state.currentSessionId = null;
+
+            try {
+                const res = await fetch('/api/apply/start', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        job_url: job.url,
+                        job_title: job.title || '',
+                        job_company: job.company || '',
+                        job_source: job.source || '',
+                    }),
+                });
+                const data = await res.json();
+
+                if (data.error) {
+                    body.innerHTML = `<p class="modal-status error">${escHtml(data.error)}</p>`;
+                    footer.style.display = 'flex';
+                    $('apply-confirm-btn').style.display = 'none';
+                    return;
+                }
+
+                state.currentSessionId = data.session_id;
+
+                // Show screenshot
+                body.innerHTML = `
+                    <p class="modal-status">Vorm on taidetud. Kontrolli kuvatommist ja kinnita saatmine.</p>
+                    <img class="screenshot-img" src="data:image/png;base64,${data.screenshot}" alt="Taidetud vorm">
+                `;
+                footer.style.display = 'flex';
+                $('apply-confirm-btn').style.display = '';
+                $('apply-confirm-btn').disabled = false;
+                $('apply-cancel-btn').disabled = false;
+
+            } catch (e) {
+                body.innerHTML = `<p class="modal-status error">Viga: ${escHtml(e.message)}</p>`;
+                footer.style.display = 'flex';
+                $('apply-confirm-btn').style.display = 'none';
+            }
+        }
+
+        // Confirm
+        $('apply-confirm-btn').addEventListener('click', async () => {
+            if (!state.currentSessionId) return;
+            const btn = $('apply-confirm-btn');
+            const body = $('apply-modal-body');
+            btn.disabled = true;
+            btn.textContent = 'Saadan...';
+
+            try {
+                const res = await fetch(`/api/apply/${state.currentSessionId}/confirm`, { method: 'POST' });
+                const data = await res.json();
+
+                if (data.success) {
+                    body.innerHTML = `
+                        <p class="modal-status success">Kandidatuur saadetud!</p>
+                        ${data.screenshot ? `<img class="screenshot-img" src="data:image/png;base64,${data.screenshot}" alt="Tulemus">` : ''}
+                    `;
+                    // Reload applications and re-render
+                    await loadApplications();
+                    applyFilters();
+                } else {
+                    body.innerHTML = `
+                        <p class="modal-status error">${escHtml(data.error || 'Saatmine ebaonnestus')}</p>
+                        ${data.screenshot ? `<img class="screenshot-img" src="data:image/png;base64,${data.screenshot}" alt="Tulemus">` : ''}
+                    `;
+                }
+            } catch (e) {
+                body.innerHTML = `<p class="modal-status error">Viga: ${escHtml(e.message)}</p>`;
+            }
+
+            btn.textContent = 'Kinnita ja saada';
+            $('apply-confirm-btn').style.display = 'none';
+            $('apply-cancel-btn').textContent = 'Sulge';
+            state.currentSessionId = null;
+        });
+
+        // Cancel
+        $('apply-cancel-btn').addEventListener('click', async () => {
+            if (state.currentSessionId) {
+                try {
+                    await fetch(`/api/apply/${state.currentSessionId}/cancel`, { method: 'POST' });
+                } catch (e) {}
+            }
+            closeApplyModal();
+        });
+
+        $('apply-modal-close').addEventListener('click', async () => {
+            if (state.currentSessionId) {
+                try {
+                    await fetch(`/api/apply/${state.currentSessionId}/cancel`, { method: 'POST' });
+                } catch (e) {}
+            }
+            closeApplyModal();
+        });
+
+        function closeApplyModal() {
+            $('apply-modal').classList.remove('open');
+            state.currentSessionId = null;
+            $('apply-cancel-btn').textContent = 'Tuhista';
+        }
+
+        // Close modal on overlay click
+        $('apply-modal').addEventListener('click', (e) => {
+            if (e.target === $('apply-modal')) {
+                // Don't auto-close if session is active
+                if (!state.currentSessionId) {
+                    closeApplyModal();
+                }
+            }
+        });
+
+        // ── Event listeners ───────────────────────────────────────────────
+
+        let searchTimeout;
+        $('search').addEventListener('input', () => {
+            clearTimeout(searchTimeout);
+            searchTimeout = setTimeout(applyFilters, 200);
+        });
+
+        $('filter-company').addEventListener('change', applyFilters);
+        $('filter-source').addEventListener('change', applyFilters);
+        $('filter-workplace').addEventListener('change', applyFilters);
+
+        $('sort-btn').addEventListener('click', () => {
+            const fields = ['company', 'title', 'location', 'date_posted'];
+            const labels = ['A-Z', 'Title', 'Location', 'Date'];
+            const idx = fields.indexOf(state.sortField);
+            const next = (idx + 1) % fields.length;
+            state.sortField = fields[next];
+            state.sortAsc = true;
+            $('sort-btn').textContent = labels[next] + ' \u2195';
+            applyFilters();
+        });
+
+        // Refresh / re-scrape button
+        $('refresh-btn').addEventListener('click', async () => {
+            const btn = $('refresh-btn');
+            btn.disabled = true;
+            btn.innerHTML = '<span class="btn-spinner"></span> Scrapin...';
+
+            try {
+                const res = await fetch('/api/scrape', { method: 'POST' });
+                const data = await res.json();
+                if (data.status === 'already_running') {
+                    btn.innerHTML = '&#x21bb; Juba jookseb...';
+                }
+
+                // Poll until done
+                let running = true;
+                while (running) {
+                    await new Promise(r => setTimeout(r, 2000));
+                    const status = await fetch('/api/scrape/status').then(r => r.json());
+                    running = status.running;
+                }
+
+                // Reload data
+                await init();
+                btn.innerHTML = '&#x21bb; Uuendatud!';
+                setTimeout(() => { btn.innerHTML = '&#x21bb; Uuenda'; }, 2000);
+            } catch (e) {
+                btn.innerHTML = '&#x21bb; Viga!';
+                setTimeout(() => { btn.innerHTML = '&#x21bb; Uuenda'; }, 3000);
+            } finally {
+                btn.disabled = false;
+            }
+        });
+
+        // CV Upload & Matching
+        const cvInput = $('cv-input');
+        const cvBtn = $('cv-btn');
+        const cvFilename = $('cv-filename');
+        const cvDropzone = $('cv-dropzone');
+        let selectedFile = null;
+
+        cvInput.addEventListener('change', (e) => {
+            selectedFile = e.target.files[0];
+            if (selectedFile) {
+                cvFilename.textContent = selectedFile.name;
+                cvBtn.disabled = false;
+            }
+        });
+
+        // Drag and drop
+        cvDropzone.addEventListener('dragover', (e) => {
+            e.preventDefault();
+            cvDropzone.classList.add('dragover');
+        });
+        cvDropzone.addEventListener('dragleave', () => {
+            cvDropzone.classList.remove('dragover');
+        });
+        cvDropzone.addEventListener('drop', (e) => {
+            e.preventDefault();
+            cvDropzone.classList.remove('dragover');
+            const file = e.dataTransfer.files[0];
+            if (file && file.name.toLowerCase().endsWith('.pdf')) {
+                selectedFile = file;
+                cvFilename.textContent = file.name;
+                cvBtn.disabled = false;
+            }
+        });
+
+        cvBtn.addEventListener('click', async () => {
+            if (!selectedFile) return;
+            cvBtn.disabled = true;
+            cvBtn.textContent = 'Analyuusin...';
+
+            try {
+                const formData = new FormData();
+                formData.append('file', selectedFile);
+
+                const res = await fetch('/api/match', { method: 'POST', body: formData });
+                const data = await res.json();
+
+                if (data.error) {
+                    $('match-results').innerHTML = `<div class="match-header"><h3 style="color:var(--pink)">${escHtml(data.error)}</h3></div>`;
+                    return;
+                }
+
+                renderMatchResults(data);
+            } catch (e) {
+                $('match-results').innerHTML = `<div class="match-header"><h3 style="color:var(--pink)">Viga CV analyuusimisel</h3></div>`;
+            } finally {
+                cvBtn.disabled = false;
+                cvBtn.textContent = 'Leia matchid';
+            }
+        });
+
+        function renderMatchResults(data) {
+            const container = $('match-results');
+            const skillsHtml = data.skills_found.map(s => `<span class="skill-tag">${escHtml(s)}</span>`).join('');
+            const expText = data.years_experience ? `${data.years_experience}+ aastat kogemust` : '';
+            const roleText = data.role_level ? `Tase: ${data.role_level}` : '';
+            const infoText = [expText, roleText].filter(Boolean).join(' | ');
+
+            let html = `
+                <div class="match-header">
+                    <button class="match-close" onclick="document.getElementById('match-results').innerHTML=''">Sulge</button>
+                    <h3>Sinu CV anal&uuml;&uuml;s &mdash; ${data.matches.length} parimat matchid ${data.total_jobs}-st</h3>
+                    <div class="skills-list">${skillsHtml}</div>
+                    ${infoText ? `<div class="match-info">${escHtml(infoText)}</div>` : ''}
+                </div>
+                <div class="job-grid">
+            `;
+
+            for (const job of data.matches) {
+                const pct = job.match_pct || 0;
+                const pctClass = pct >= 50 ? 'match-high' : pct >= 25 ? 'match-mid' : 'match-low';
+                const wpClass = { remote:'tag-remote', hybrid:'tag-hybrid', onsite:'tag-onsite' }[job.workplace_type] || '';
+                const wpLabel = { remote:'Remote', hybrid:'Hybrid', onsite:'Onsite' }[job.workplace_type] || '';
+                const matchedSkillsHtml = (job.matched_skills || []).map(s =>
+                    `<span class="matched-skill-tag">${escHtml(s)}</span>`
+                ).join('');
+
+                html += `
+                    <a class="job-card" href="${escHtml(job.url)}" target="_blank" rel="noopener" style="border-left: 3px solid ${pct >= 50 ? 'var(--green)' : pct >= 25 ? 'var(--orange)' : 'var(--border)'}">
+                        <div class="job-title">
+                            ${escHtml(job.title)}
+                            <span class="match-score-badge ${pctClass}">${pct}%</span>
+                        </div>
+                        <div class="job-company">${escHtml(job.company)}</div>
+                        <div class="job-meta">
+                            <span class="tag tag-location">${escHtml(job.location)}</span>
+                            ${wpLabel ? `<span class="tag ${wpClass}">${wpLabel}</span>` : ''}
+                            ${job.department ? `<span class="tag tag-dept">${escHtml(job.department)}</span>` : ''}
+                            ${matchedSkillsHtml}
+                        </div>
+                    </a>`;
+            }
+
+            html += '</div>';
+            container.innerHTML = html;
+            container.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        }
+
+        init();
+    </script>
+</body>
+</html>
