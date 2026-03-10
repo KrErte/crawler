@@ -244,14 +244,18 @@ class AutoApplier:
 
         from datetime import datetime
 
+        now = datetime.now().isoformat()
         applications.append(
             {
+                "id": uuid.uuid4().hex[:8],
                 "job_title": session.job.get("title", ""),
                 "company": session.job.get("company", ""),
                 "url": session.job.get("url", ""),
                 "source": session.job.get("source", ""),
-                "applied_at": datetime.now().isoformat(),
+                "applied_at": now,
                 "status": "submitted",
+                "notes": "",
+                "updated_at": now,
             }
         )
 

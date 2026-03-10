@@ -1,6 +1,7 @@
 """Scraper registry — all available scrapers and their configurations."""
 
 from ee_it_jobs.scrapers.cvee import CvEeScraper
+from ee_it_jobs.scrapers.cvkeskus import CvKeskusScraper
 from ee_it_jobs.scrapers.tootukassa import TootukassaScraper
 from ee_it_jobs.scrapers.lever import LeverScraper
 from ee_it_jobs.scrapers.greenhouse import GreenhouseScraper
@@ -14,6 +15,7 @@ from ee_it_jobs.scrapers.teamtailor import TeamtailorScraper
 SCRAPER_CONFIGS: list[tuple[type, dict]] = [
     # Job portals
     (CvEeScraper, {}),
+    (CvKeskusScraper, {}),
     (TootukassaScraper, {}),
 
     # Lever ATS

@@ -289,16 +289,184 @@ async def cancel_apply(session_id: str):
     return {"ok": True}
 
 
+# ── Live Browser View API ────────────────────────────────────────────────
+
+
+class ClickRequest(PydanticBaseModel):
+    x: float
+    y: float
+
+
+class TypeRequest(PydanticBaseModel):
+    text: str = ""
+    key: str = ""
+
+
+class ScrollRequest(PydanticBaseModel):
+    delta_x: float = 0
+    delta_y: float = 0
+
+
+@app.get("/api/apply/{session_id}/live")
+async def get_live_view(session_id: str):
+    """Get current viewport screenshot for live browser view."""
+    applier = _get_applier()
+    session = applier._sessions.get(session_id)
+    if not session:
+        return {"error": "Sessiooni ei leitud", "closed": True}
+    try:
+        screenshot = await session.page.screenshot(full_page=False)
+        import base64
+        return {
+            "screenshot": base64.b64encode(screenshot).decode(),
+            "url": session.page.url,
+            "viewport": {"width": 1280, "height": 900},
+        }
+    except Exception as e:
+        return {"error": str(e)}
+
+
+@app.post("/api/apply/{session_id}/click")
+async def session_click(session_id: str, body: ClickRequest):
+    """Forward a mouse click to the live session page."""
+    applier = _get_applier()
+    session = applier._sessions.get(session_id)
+    if not session:
+        return {"error": "Sessiooni ei leitud"}
+    try:
+        await session.page.mouse.click(body.x, body.y)
+        return {"ok": True}
+    except Exception as e:
+        return {"error": str(e)}
+
+
+@app.post("/api/apply/{session_id}/type")
+async def session_type(session_id: str, body: TypeRequest):
+    """Forward keyboard input to the live session page."""
+    applier = _get_applier()
+    session = applier._sessions.get(session_id)
+    if not session:
+        return {"error": "Sessiooni ei leitud"}
+    try:
+        if body.key:
+            await session.page.keyboard.press(body.key)
+        elif body.text:
+            await session.page.keyboard.type(body.text)
+        return {"ok": True}
+    except Exception as e:
+        return {"error": str(e)}
+
+
+@app.post("/api/apply/{session_id}/scroll")
+async def session_scroll(session_id: str, body: ScrollRequest):
+    """Forward scroll events to the live session page."""
+    applier = _get_applier()
+    session = applier._sessions.get(session_id)
+    if not session:
+        return {"error": "Sessiooni ei leitud"}
+    try:
+        await session.page.mouse.wheel(body.delta_x, body.delta_y)
+        return {"ok": True}
+    except Exception as e:
+        return {"error": str(e)}
+
+
+@app.post("/api/apply/{session_id}/done")
+async def mark_session_done(session_id: str):
+    """Mark session as submitted and record the application."""
+    applier = _get_applier()
+    session = applier._sessions.get(session_id)
+    if not session:
+        return {"error": "Sessiooni ei leitud"}
+    try:
+        session.status = "submitted"
+        applier._record_application(session)
+        await applier._close_session(session)
+        return {"ok": True}
+    except Exception as e:
+        return {"error": str(e)}
+
+
 @app.get("/api/applications")
 async def get_applications():
     """Return application history."""
     if APPLICATIONS_PATH.exists():
         try:
             data = json.loads(APPLICATIONS_PATH.read_text(encoding="utf-8"))
+            # Ensure all records have an id
+            import uuid as _uuid
+            changed = False
+            for rec in data:
+                if "id" not in rec:
+                    rec["id"] = _uuid.uuid4().hex[:8]
+                    changed = True
+            if changed:
+                APPLICATIONS_PATH.write_text(
+                    json.dumps(data, ensure_ascii=False, indent=2), encoding="utf-8"
+                )
             return {"applications": data}
         except (json.JSONDecodeError, OSError):
             pass
     return {"applications": []}
+
+
+class ApplicationUpdate(PydanticBaseModel):
+    status: str | None = None
+    notes: str | None = None
+
+
+@app.put("/api/applications/{app_id}")
+async def update_application(app_id: str, body: ApplicationUpdate):
+    """Update status and/or notes for an application."""
+    if not APPLICATIONS_PATH.exists():
+        return {"error": "Kandideerimisi ei leitud"}
+
+    try:
+        data = json.loads(APPLICATIONS_PATH.read_text(encoding="utf-8"))
+    except (json.JSONDecodeError, OSError):
+        return {"error": "Faili lugemine ebaonnestus"}
+
+    VALID_STATUSES = {"submitted", "interview", "offer", "rejected", "ghosted"}
+
+    for rec in data:
+        if rec.get("id") == app_id:
+            if body.status is not None:
+                if body.status not in VALID_STATUSES:
+                    return {"error": f"Vigane staatus: {body.status}"}
+                rec["status"] = body.status
+            if body.notes is not None:
+                rec["notes"] = body.notes
+            from datetime import datetime
+            rec["updated_at"] = datetime.now().isoformat()
+
+            APPLICATIONS_PATH.write_text(
+                json.dumps(data, ensure_ascii=False, indent=2), encoding="utf-8"
+            )
+            return {"ok": True, "application": rec}
+
+    return {"error": "Kandideerimist ei leitud"}
+
+
+@app.delete("/api/applications/{app_id}")
+async def delete_application(app_id: str):
+    """Delete an application record."""
+    if not APPLICATIONS_PATH.exists():
+        return {"error": "Kandideerimisi ei leitud"}
+
+    try:
+        data = json.loads(APPLICATIONS_PATH.read_text(encoding="utf-8"))
+    except (json.JSONDecodeError, OSError):
+        return {"error": "Faili lugemine ebaonnestus"}
+
+    new_data = [rec for rec in data if rec.get("id") != app_id]
+
+    if len(new_data) == len(data):
+        return {"error": "Kandideerimist ei leitud"}
+
+    APPLICATIONS_PATH.write_text(
+        json.dumps(new_data, ensure_ascii=False, indent=2), encoding="utf-8"
+    )
+    return {"ok": True}
 
 
 # ── Helpers ──────────────────────────────────────────────────────────────────

@@ -183,6 +183,10 @@
         .tag-onsite { background: rgba(244, 114, 182, 0.15); color: var(--pink); }
         .tag-dept { background: rgba(148, 163, 184, 0.1); color: var(--text-dim); }
         .tag-applied { background: rgba(74, 222, 128, 0.2); color: var(--green); font-weight: 600; }
+        .tag-interview { background: rgba(56, 189, 248, 0.2); color: var(--accent); font-weight: 600; }
+        .tag-offer { background: rgba(251, 191, 36, 0.2); color: #fbbf24; font-weight: 600; }
+        .tag-rejected { background: rgba(239, 68, 68, 0.2); color: #ef4444; font-weight: 600; }
+        .tag-ghosted { background: rgba(148, 163, 184, 0.2); color: var(--text-dim); font-weight: 600; }
 
         .job-snippet {
             font-size: 0.825rem;
@@ -684,6 +688,266 @@
 
         .modal-btn-cancel:hover { border-color: var(--pink); color: var(--pink); }
 
+        /* Tab navigation */
+        .tab-nav {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 1rem 2rem 0;
+            display: flex;
+            gap: 0;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .tab-btn {
+            padding: 0.75rem 1.5rem;
+            background: none;
+            border: none;
+            border-bottom: 2px solid transparent;
+            color: var(--text-dim);
+            font-size: 0.95rem;
+            font-weight: 500;
+            cursor: pointer;
+            transition: color 0.2s, border-color 0.2s;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .tab-btn:hover { color: var(--text); }
+
+        .tab-btn.active {
+            color: var(--accent);
+            border-bottom-color: var(--accent);
+        }
+
+        .tab-badge {
+            background: var(--surface-hover);
+            color: var(--text-dim);
+            padding: 0.1rem 0.5rem;
+            border-radius: 999px;
+            font-size: 0.75rem;
+            font-weight: 600;
+        }
+
+        .tab-btn.active .tab-badge {
+            background: rgba(56, 189, 248, 0.2);
+            color: var(--accent);
+        }
+
+        .tab-content { display: none; }
+        .tab-content.active { display: block; }
+
+        /* Applications panel */
+        .app-summary {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            padding: 1rem 1.25rem;
+            margin-bottom: 1rem;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 1rem;
+            align-items: center;
+            font-size: 0.875rem;
+        }
+
+        .app-summary-item {
+            display: flex;
+            align-items: center;
+            gap: 0.35rem;
+        }
+
+        .app-summary-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            display: inline-block;
+        }
+
+        .app-filter-bar {
+            display: flex;
+            gap: 0.5rem;
+            margin-bottom: 1rem;
+            flex-wrap: wrap;
+        }
+
+        .app-filter-btn {
+            padding: 0.4rem 0.9rem;
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: 999px;
+            color: var(--text-dim);
+            font-size: 0.8rem;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .app-filter-btn:hover { border-color: var(--accent); color: var(--text); }
+        .app-filter-btn.active { background: rgba(56, 189, 248, 0.15); border-color: var(--accent); color: var(--accent); }
+
+        .app-card {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            padding: 1.25rem;
+            margin-bottom: 0.75rem;
+            display: flex;
+            gap: 1rem;
+            align-items: flex-start;
+            transition: border-color 0.2s;
+        }
+
+        .app-card:hover { border-color: var(--accent); }
+
+        .app-card-status-bar {
+            width: 4px;
+            min-height: 60px;
+            border-radius: 2px;
+            flex-shrink: 0;
+            align-self: stretch;
+        }
+
+        .app-card-body {
+            flex: 1;
+            min-width: 0;
+        }
+
+        .app-card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            gap: 0.75rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .app-card-title {
+            font-size: 1rem;
+            font-weight: 600;
+            color: var(--text);
+        }
+
+        .app-card-company {
+            font-size: 0.9rem;
+            color: var(--accent);
+            font-weight: 500;
+        }
+
+        .app-card-date {
+            font-size: 0.75rem;
+            color: var(--text-dim);
+            margin-top: 0.25rem;
+        }
+
+        .app-card-actions {
+            display: flex;
+            gap: 0.5rem;
+            align-items: center;
+            flex-shrink: 0;
+        }
+
+        .app-status-select {
+            padding: 0.35rem 0.6rem;
+            background: var(--bg);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            color: var(--text);
+            font-size: 0.8rem;
+            cursor: pointer;
+            outline: none;
+        }
+
+        .app-status-select:focus { border-color: var(--accent); }
+
+        .app-delete-btn {
+            background: none;
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            color: var(--text-dim);
+            padding: 0.3rem 0.6rem;
+            font-size: 0.8rem;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .app-delete-btn:hover { border-color: #ef4444; color: #ef4444; }
+
+        .app-card-notes {
+            margin-top: 0.5rem;
+        }
+
+        .app-notes-input {
+            width: 100%;
+            padding: 0.5rem 0.75rem;
+            background: var(--bg);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            color: var(--text);
+            font-size: 0.825rem;
+            font-family: inherit;
+            resize: vertical;
+            min-height: 36px;
+            outline: none;
+            transition: border-color 0.2s;
+        }
+
+        .app-notes-input:focus { border-color: var(--accent); }
+
+        .app-notes-input::placeholder { color: var(--text-dim); }
+
+        .app-card-links {
+            margin-top: 0.5rem;
+            display: flex;
+            gap: 0.5rem;
+        }
+
+        .app-link {
+            font-size: 0.8rem;
+            color: var(--accent);
+            text-decoration: none;
+        }
+
+        .app-link:hover { text-decoration: underline; }
+
+        /* Live browser view */
+        .live-view-container {
+            position: relative;
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            overflow: hidden;
+            cursor: pointer;
+            margin: 0.5rem 0;
+        }
+
+        .live-screenshot {
+            max-width: 100%;
+            display: block;
+            outline: none;
+            user-select: none;
+        }
+
+        .live-screenshot:focus {
+            box-shadow: 0 0 0 2px var(--accent);
+        }
+
+        .live-hint {
+            font-size: 0.8rem;
+            color: var(--text-dim);
+            margin-top: 0.5rem;
+            text-align: center;
+        }
+
+        .live-url {
+            font-size: 0.75rem;
+            color: var(--text-dim);
+            background: var(--bg);
+            padding: 0.3rem 0.6rem;
+            border-radius: 4px;
+            margin-bottom: 0.5rem;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+
         @media (max-width: 768px) {
             .header { padding: 1rem; }
             .controls { padding: 0 1rem; }
@@ -692,6 +956,10 @@
             .header-inner { flex-direction: column; align-items: flex-start; }
             .profile-form { grid-template-columns: 1fr; }
             .profile-section, .cv-section { padding: 0 1rem; }
+            .tab-nav { padding: 1rem 1rem 0; }
+            .app-card { flex-direction: column; }
+            .app-card-header { flex-direction: column; }
+            .app-card-actions { width: 100%; }
         }
     </style>
 </head>
@@ -708,6 +976,17 @@
             </div>
         </div>
     </div>
+
+    <div class="tab-nav">
+        <button class="tab-btn active" data-tab="jobs" id="tab-jobs-btn">
+            Tööd <span class="tab-badge" id="tab-jobs-count">0</span>
+        </button>
+        <button class="tab-btn" data-tab="applications" id="tab-apps-btn">
+            Kandidatuurid <span class="tab-badge" id="tab-apps-count">0</span>
+        </button>
+    </div>
+
+    <div id="tab-jobs" class="tab-content active">
 
     <div class="controls">
         <div class="search-box">
@@ -798,6 +1077,27 @@
         </div>
     </div>
 
+    </div><!-- /tab-jobs -->
+
+    <div id="tab-applications" class="tab-content">
+        <div class="main">
+            <div class="app-summary" id="app-summary"></div>
+            <div class="app-filter-bar" id="app-filter-bar">
+                <button class="app-filter-btn active" data-status="all">Kõik</button>
+                <button class="app-filter-btn" data-status="submitted">Kandideeritud</button>
+                <button class="app-filter-btn" data-status="interview">Intervjuu</button>
+                <button class="app-filter-btn" data-status="offer">Pakkumine</button>
+                <button class="app-filter-btn" data-status="rejected">Keeldutud</button>
+                <button class="app-filter-btn" data-status="ghosted">Vastuseta</button>
+            </div>
+            <div id="app-list"></div>
+            <div class="empty-state" id="app-empty" style="display:none">
+                <h2>Kandideerimisi pole veel</h2>
+                <p>Mine "Tööd" vaatesse ja kandideeri mõnele töökohale</p>
+            </div>
+        </div>
+    </div><!-- /tab-applications -->
+
     <!-- Apply modal -->
     <div class="modal-overlay" id="apply-modal">
         <div class="modal">
@@ -827,6 +1127,8 @@
             profileSaved: false,
             applications: [],
             currentSessionId: null,
+            liveMode: false,
+            liveInterval: null,
         };
 
         const $ = id => document.getElementById(id);
@@ -869,6 +1171,8 @@
 
             await loadProfile();
             await loadApplications();
+            $('tab-jobs-count').textContent = state.jobs.length;
+            $('tab-apps-count').textContent = state.applications.length;
             applyFilters();
         }
 
@@ -989,6 +1293,10 @@
             return state.applications.some(a => a.url === jobUrl);
         }
 
+        function getApplication(jobUrl) {
+            return state.applications.find(a => a.url === jobUrl) || null;
+        }
+
         // ── Filters & Rendering ───────────────────────────────────────────
 
         function applyFilters() {
@@ -1052,10 +1360,13 @@
                 onsite: 'Onsite',
             }[job.workplace_type] || '';
 
-            const applied = isApplied(job.url);
-            const appliedTag = applied
-                ? '<span class="tag tag-applied">Kandideeritud</span>'
-                : '';
+            const appRecord = getApplication(job.url);
+            const applied = !!appRecord;
+            let appliedTag = '';
+            if (appRecord) {
+                const cfg = STATUS_CONFIG[appRecord.status] || STATUS_CONFIG.submitted;
+                appliedTag = `<span class="tag ${cfg.tagClass}">${escHtml(cfg.label)}</span>`;
+            }
 
             const applyBtn = applied
                 ? ''
@@ -1148,16 +1459,26 @@
                 }
 
                 state.currentSessionId = data.session_id;
+                state.liveMode = true;
 
-                // Show screenshot
+                // Show live browser view
                 body.innerHTML = `
-                    <p class="modal-status">Vorm on taidetud. Kontrolli kuvatommist ja kinnita saatmine.</p>
-                    <img class="screenshot-img" src="data:image/png;base64,${data.screenshot}" alt="Taidetud vorm">
+                    <div class="live-url" id="live-url"></div>
+                    <div class="live-view-container" id="live-container">
+                        <img id="live-screenshot" class="live-screenshot" tabindex="0"
+                             src="data:image/png;base64,${data.screenshot}" alt="Live brauser">
+                    </div>
+                    <p class="live-hint">Kliki vormil, tüübi teksti, keri hiireratast. Kui oled vormi saatnud, vajuta "Märgi saadetaks".</p>
                 `;
                 footer.style.display = 'flex';
+                $('apply-confirm-btn').textContent = 'Märgi saadetaks';
                 $('apply-confirm-btn').style.display = '';
                 $('apply-confirm-btn').disabled = false;
                 $('apply-cancel-btn').disabled = false;
+
+                setupLiveInteractions();
+                $('live-screenshot').focus();
+                state.liveInterval = setInterval(pollLiveScreenshot, 750);
 
             } catch (e) {
                 body.innerHTML = `<p class="modal-status error">Viga: ${escHtml(e.message)}</p>`;
@@ -1166,40 +1487,37 @@
             }
         }
 
-        // Confirm
+        // Confirm / Mark as done
         $('apply-confirm-btn').addEventListener('click', async () => {
             if (!state.currentSessionId) return;
             const btn = $('apply-confirm-btn');
             const body = $('apply-modal-body');
             btn.disabled = true;
-            btn.textContent = 'Saadan...';
+            btn.textContent = 'Salvestan...';
+
+            stopLiveView();
 
             try {
-                const res = await fetch(`/api/apply/${state.currentSessionId}/confirm`, { method: 'POST' });
+                const res = await fetch(`/api/apply/${state.currentSessionId}/done`, { method: 'POST' });
                 const data = await res.json();
 
-                if (data.success) {
-                    body.innerHTML = `
-                        <p class="modal-status success">Kandidatuur saadetud!</p>
-                        ${data.screenshot ? `<img class="screenshot-img" src="data:image/png;base64,${data.screenshot}" alt="Tulemus">` : ''}
-                    `;
-                    // Reload applications and re-render
+                if (data.ok) {
+                    body.innerHTML = '<p class="modal-status success">Kandidatuur salvestatud!</p>';
                     await loadApplications();
                     applyFilters();
+                    renderApplications();
                 } else {
-                    body.innerHTML = `
-                        <p class="modal-status error">${escHtml(data.error || 'Saatmine ebaonnestus')}</p>
-                        ${data.screenshot ? `<img class="screenshot-img" src="data:image/png;base64,${data.screenshot}" alt="Tulemus">` : ''}
-                    `;
+                    body.innerHTML = `<p class="modal-status error">${escHtml(data.error || 'Salvestamine ebaonnestus')}</p>`;
                 }
             } catch (e) {
                 body.innerHTML = `<p class="modal-status error">Viga: ${escHtml(e.message)}</p>`;
             }
 
-            btn.textContent = 'Kinnita ja saada';
+            btn.textContent = 'Märgi saadetaks';
             $('apply-confirm-btn').style.display = 'none';
             $('apply-cancel-btn').textContent = 'Sulge';
             state.currentSessionId = null;
+            state.liveMode = false;
         });
 
         // Cancel
@@ -1222,9 +1540,12 @@
         });
 
         function closeApplyModal() {
+            stopLiveView();
             $('apply-modal').classList.remove('open');
             state.currentSessionId = null;
+            state.liveMode = false;
             $('apply-cancel-btn').textContent = 'Tuhista';
+            $('apply-confirm-btn').textContent = 'Märgi saadetaks';
         }
 
         // Close modal on overlay click
@@ -1398,6 +1719,279 @@
             html += '</div>';
             container.innerHTML = html;
             container.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        }
+
+        // ── Live browser view ─────────────────────────────────────────────
+
+        function setupLiveInteractions() {
+            const img = $('live-screenshot');
+            const container = $('live-container');
+
+            // Click → forward to Playwright
+            img.addEventListener('click', async (e) => {
+                if (!state.currentSessionId) return;
+                const rect = img.getBoundingClientRect();
+                const scaleX = 1280 / rect.width;
+                const scaleY = 900 / rect.height;
+                const x = (e.clientX - rect.left) * scaleX;
+                const y = (e.clientY - rect.top) * scaleY;
+
+                await fetch(`/api/apply/${state.currentSessionId}/click`, {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({x, y}),
+                });
+                setTimeout(pollLiveScreenshot, 200);
+            });
+
+            // Keyboard → forward to Playwright
+            img.addEventListener('keydown', async (e) => {
+                if (!state.currentSessionId) return;
+                e.preventDefault();
+
+                const specialKeys = ['Backspace','Tab','Enter','Escape',
+                    'ArrowUp','ArrowDown','ArrowLeft','ArrowRight',
+                    'Delete','Home','End'];
+
+                let payload;
+                if (specialKeys.includes(e.key)) {
+                    payload = {key: e.key};
+                } else if (e.key.length === 1) {
+                    payload = {text: e.key};
+                } else {
+                    return;
+                }
+
+                await fetch(`/api/apply/${state.currentSessionId}/type`, {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify(payload),
+                });
+                setTimeout(pollLiveScreenshot, 200);
+            });
+
+            // Scroll → forward to Playwright
+            container.addEventListener('wheel', async (e) => {
+                if (!state.currentSessionId) return;
+                e.preventDefault();
+                await fetch(`/api/apply/${state.currentSessionId}/scroll`, {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({delta_x: e.deltaX, delta_y: e.deltaY}),
+                });
+                setTimeout(pollLiveScreenshot, 200);
+            }, {passive: false});
+        }
+
+        async function pollLiveScreenshot() {
+            if (!state.currentSessionId || !state.liveMode) return;
+            try {
+                const res = await fetch(`/api/apply/${state.currentSessionId}/live`);
+                const data = await res.json();
+                if (data.closed) {
+                    stopLiveView();
+                    return;
+                }
+                if (data.screenshot) {
+                    const img = $('live-screenshot');
+                    if (img) img.src = 'data:image/png;base64,' + data.screenshot;
+                }
+                if (data.url) {
+                    const urlEl = $('live-url');
+                    if (urlEl) urlEl.textContent = data.url;
+                }
+            } catch (e) {}
+        }
+
+        function stopLiveView() {
+            if (state.liveInterval) {
+                clearInterval(state.liveInterval);
+                state.liveInterval = null;
+            }
+        }
+
+        // ── Tab navigation ────────────────────────────────────────────────
+
+        document.querySelectorAll('.tab-btn').forEach(btn => {
+            btn.addEventListener('click', () => {
+                document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+                document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+                btn.classList.add('active');
+                const tabId = btn.dataset.tab;
+                const tabEl = document.getElementById('tab-' + tabId);
+                if (tabEl) tabEl.classList.add('active');
+
+                if (tabId === 'applications') {
+                    renderApplications();
+                }
+            });
+        });
+
+        // ── Application Management ───────────────────────────────────────
+
+        const STATUS_CONFIG = {
+            submitted: { label: 'Kandideeritud', color: '#4ade80', tagClass: 'tag-applied' },
+            interview: { label: 'Intervjuu', color: '#38bdf8', tagClass: 'tag-interview' },
+            offer:     { label: 'Pakkumine', color: '#fbbf24', tagClass: 'tag-offer' },
+            rejected:  { label: 'Keeldutud', color: '#ef4444', tagClass: 'tag-rejected' },
+            ghosted:   { label: 'Vastuseta', color: '#94a3b8', tagClass: 'tag-ghosted' },
+        };
+
+        let appFilterStatus = 'all';
+
+        function renderApplications() {
+            const apps = state.applications;
+            $('tab-apps-count').textContent = apps.length;
+
+            // Summary
+            const counts = {};
+            for (const a of apps) {
+                counts[a.status] = (counts[a.status] || 0) + 1;
+            }
+            let summaryHtml = `<span style="font-weight:600">${apps.length} kandideerimist:</span>`;
+            for (const [status, cfg] of Object.entries(STATUS_CONFIG)) {
+                if (counts[status]) {
+                    summaryHtml += `
+                        <span class="app-summary-item">
+                            <span class="app-summary-dot" style="background:${cfg.color}"></span>
+                            ${counts[status]} ${cfg.label.toLowerCase()}
+                        </span>`;
+                }
+            }
+            $('app-summary').innerHTML = summaryHtml;
+
+            // Filter
+            const filtered = appFilterStatus === 'all'
+                ? apps
+                : apps.filter(a => a.status === appFilterStatus);
+
+            // Empty state
+            if (apps.length === 0) {
+                $('app-empty').style.display = 'block';
+                $('app-list').innerHTML = '';
+                $('app-summary').style.display = 'none';
+                return;
+            }
+
+            $('app-empty').style.display = 'none';
+            $('app-summary').style.display = 'flex';
+
+            if (filtered.length === 0) {
+                $('app-list').innerHTML = '<div class="empty-state"><p>Selle filtriga kandideerimisi ei leitud</p></div>';
+                return;
+            }
+
+            $('app-list').innerHTML = filtered.map(renderAppCard).join('');
+        }
+
+        function renderAppCard(app) {
+            const cfg = STATUS_CONFIG[app.status] || STATUS_CONFIG.submitted;
+            const date = new Date(app.applied_at);
+            const dateStr = date.toLocaleDateString('et-EE') + ' ' + date.toLocaleTimeString('et-EE', {hour:'2-digit', minute:'2-digit'});
+
+            const statusOptions = Object.entries(STATUS_CONFIG).map(([val, c]) =>
+                `<option value="${val}" ${val === app.status ? 'selected' : ''}>${c.label}</option>`
+            ).join('');
+
+            return `
+                <div class="app-card" data-app-id="${escHtml(app.id)}">
+                    <div class="app-card-status-bar" style="background:${cfg.color}"></div>
+                    <div class="app-card-body">
+                        <div class="app-card-header">
+                            <div>
+                                <div class="app-card-title">${escHtml(app.job_title)}</div>
+                                <div class="app-card-company">${escHtml(app.company)}</div>
+                                <div class="app-card-date">Kandideeritud: ${dateStr}</div>
+                            </div>
+                            <div class="app-card-actions">
+                                <select class="app-status-select" onchange="updateAppStatus('${escHtml(app.id)}', this.value)">
+                                    ${statusOptions}
+                                </select>
+                                <button class="app-delete-btn" onclick="deleteApp('${escHtml(app.id)}')" title="Kustuta">&#x2715;</button>
+                            </div>
+                        </div>
+                        <div class="app-card-notes">
+                            <textarea class="app-notes-input"
+                                placeholder="Lisa märkmeid..."
+                                data-app-id="${escHtml(app.id)}"
+                                oninput="scheduleNoteSave('${escHtml(app.id)}', this.value)"
+                            >${escHtml(app.notes || '')}</textarea>
+                        </div>
+                        <div class="app-card-links">
+                            <a class="app-link" href="${escHtml(app.url)}" target="_blank" rel="noopener">Ava tööpakkumine &#8599;</a>
+                        </div>
+                    </div>
+                </div>`;
+        }
+
+        // Status filter buttons
+        document.querySelectorAll('.app-filter-btn').forEach(btn => {
+            btn.addEventListener('click', () => {
+                document.querySelectorAll('.app-filter-btn').forEach(b => b.classList.remove('active'));
+                btn.classList.add('active');
+                appFilterStatus = btn.dataset.status;
+                renderApplications();
+            });
+        });
+
+        // Update application status
+        async function updateAppStatus(appId, newStatus) {
+            try {
+                const res = await fetch(`/api/applications/${appId}`, {
+                    method: 'PUT',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ status: newStatus }),
+                });
+                const data = await res.json();
+                if (data.ok) {
+                    const app = state.applications.find(a => a.id === appId);
+                    if (app) {
+                        app.status = newStatus;
+                        app.updated_at = data.application.updated_at;
+                    }
+                    renderApplications();
+                    applyFilters(); // Re-render job cards with updated status
+                }
+            } catch (e) {}
+        }
+
+        // Auto-save notes with debounce
+        const noteTimers = {};
+        function scheduleNoteSave(appId, value) {
+            clearTimeout(noteTimers[appId]);
+            noteTimers[appId] = setTimeout(() => saveAppNotes(appId, value), 600);
+        }
+
+        async function saveAppNotes(appId, notes) {
+            try {
+                const res = await fetch(`/api/applications/${appId}`, {
+                    method: 'PUT',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ notes }),
+                });
+                const data = await res.json();
+                if (data.ok) {
+                    const app = state.applications.find(a => a.id === appId);
+                    if (app) {
+                        app.notes = notes;
+                        app.updated_at = data.application.updated_at;
+                    }
+                }
+            } catch (e) {}
+        }
+
+        // Delete application
+        async function deleteApp(appId) {
+            if (!confirm('Kas oled kindel, et soovid selle kandideerimise kustutada?')) return;
+            try {
+                const res = await fetch(`/api/applications/${appId}`, { method: 'DELETE' });
+                const data = await res.json();
+                if (data.ok) {
+                    state.applications = state.applications.filter(a => a.id !== appId);
+                    renderApplications();
+                    applyFilters(); // Re-render job cards
+                }
+            } catch (e) {}
         }
 
         init();
