@@ -18,7 +18,7 @@ import { JobMatchScore } from '../../models/match.model';
         <h1 class="text-2xl font-bold text-white">IT Jobs in Estonia</h1>
         <span class="text-gray-500">{{ totalElements }} jobs found</span>
       </div>
-      <app-job-filters (filterChange)="onFilterChange($event)" class="block mb-6" />
+      <app-job-filters (filterChange)="onFilterChange($event)" [showMatchSort]="hasCv" class="block mb-6" />
       @if (loading) {
         <div class="text-center py-12 text-gray-500">Loading jobs...</div>
       } @else if (jobs.length === 0) {
@@ -52,7 +52,8 @@ export class JobsComponent implements OnInit {
   currentPage = 0;
   private currentFilters: any = {};
   private matchScores = new Map<number, JobMatchScore>();
-  private hasCv = false;
+  hasCv = false;
+  private sortByMatch = false;
 
   constructor(
     private jobService: JobService,
@@ -73,6 +74,10 @@ export class JobsComponent implements OnInit {
   }
 
   onFilterChange(filters: any) {
+    this.sortByMatch = filters.sortBy === 'match';
+    if (this.sortByMatch) {
+      filters = { ...filters, sortBy: 'dateScraped' };
+    }
     this.currentFilters = filters;
     this.currentPage = 0;
     this.loadJobs();
@@ -118,7 +123,18 @@ export class JobsComponent implements OnInit {
         for (const score of scores) {
           this.matchScores.set(score.jobId, score);
         }
+        if (this.sortByMatch) {
+          this.sortJobsByMatch();
+        }
       }
+    });
+  }
+
+  private sortJobsByMatch() {
+    this.jobs.sort((a, b) => {
+      const scoreA = this.matchScores.get(a.id)?.matchPercentage ?? 0;
+      const scoreB = this.matchScores.get(b.id)?.matchPercentage ?? 0;
+      return scoreB - scoreA;
     });
   }
 }

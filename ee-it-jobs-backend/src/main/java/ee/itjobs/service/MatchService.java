@@ -219,6 +219,7 @@ public class MatchService {
         List<MatchResultDto> results = new ArrayList<>();
 
         for (Job job : activeJobs) {
+            if (!JobService.isItRelated(job.getTitle(), job.getDepartment())) continue;
             var result = scoreJob(profile, job);
             if (result.matchPercentage() > 0) {
                 results.add(MatchResultDto.builder()
