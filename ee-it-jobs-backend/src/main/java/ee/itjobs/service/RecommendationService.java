@@ -34,7 +34,7 @@ public class RecommendationService {
         }
 
         // Extract patterns from applied jobs
-        Set<String> appliedJobIds = applications.stream()
+        Set<Long> appliedJobIds = applications.stream()
                 .map(a -> a.getJob().getId())
                 .collect(Collectors.toSet());
 
