@@ -284,11 +284,16 @@ def main():
     run(client,
         f"cp {REMOTE_DIR}/ee-it-jobs-backend/target/*.jar {REMOTE_DIR}/app.jar")
 
-    # Step 9: Setup nginx
+    # Step 9: Setup nginx (only if config doesn't exist yet)
     print("\n=== Configuring nginx ===")
-    write_remote_file(client, "/etc/nginx/sites-available/ee-it-jobs", NGINX_CONF)
+    existing = run(client, "test -f /etc/nginx/sites-available/ee-it-jobs && echo exists || echo missing", check=False)
+    if "missing" in existing:
+        write_remote_file(client, "/etc/nginx/sites-available/ee-it-jobs", NGINX_CONF)
+        print("  Wrote new nginx config")
+    else:
+        print("  Preserving existing nginx config (SSL)")
     run(client, "ln -sf /etc/nginx/sites-available/ee-it-jobs /etc/nginx/sites-enabled/ee-it-jobs", check=False)
-    run(client, "rm -f /etc/nginx/sites-enabled/default", check=False)
+    run(client, "rm -f /etc/nginx/sites-enabled/default /etc/nginx/sites-enabled/dev-doraaudit", check=False)
     run(client, "nginx -t && systemctl reload nginx", check=False)
 
     # Step 10: Setup systemd service
