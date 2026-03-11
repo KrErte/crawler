@@ -28,6 +28,7 @@ public class ScrapeOrchestratorService {
     private final ScraperRegistry scraperRegistry;
     private final DeduplicationService deduplicationService;
     private final ScrapeRunRepository scrapeRunRepository;
+    private final WebSocketNotificationService webSocketNotificationService;
 
     @Value("${app.scraper.max-concurrency}")
     private int maxConcurrency;
@@ -101,6 +102,8 @@ public class ScrapeOrchestratorService {
                     totalNew.addAndGet(newCount);
                     totalErrors.addAndGet(result.getErrors().size());
 
+                    webSocketNotificationService.notifyScrapeProgress(scraper.getName(), newCount);
+
                     Map<String, Object> stats = new LinkedHashMap<>();
                     stats.put("total", result.getJobs().size());
                     stats.put("new", newCount);
@@ -120,6 +123,8 @@ public class ScrapeOrchestratorService {
         run.setTotalErrors(totalErrors.get());
         run.setSourceStats(sourceStats);
         scrapeRunRepository.save(run);
+
+        webSocketNotificationService.notifyScrapeComplete(totalNew.get(), totalJobs.get());
 
         log.info("Scrape completed: {} total, {} new, {} errors",
                 totalJobs.get(), totalNew.get(), totalErrors.get());

@@ -14,19 +14,15 @@ _WS = re.compile(r"\s+")
 
 class CvKeskusScraper(BaseScraper):
     name = "cvkeskus"
-    base_url = "https://www.cvkeskus.ee/toopakkumised"
+    base_url = "https://www.cvkeskus.ee/toopakkumised-infotehnoloogia-valdkonnas"
     requires_browser = False
 
-    PAGE_SIZE = 30
+    PAGE_SIZE = 25
 
     async def scrape(self) -> AsyncIterator[JobListing]:
         offset = 0
         while True:
-            url = (
-                f"{self.base_url}"
-                f"?op=search&search%5Bcategory%5D=INFORMATION_TECHNOLOGY"
-                f"&start={offset}"
-            )
+            url = f"{self.base_url}?start={offset}"
             try:
                 html = await self.fetch_page(url)
             except Exception:
@@ -50,8 +46,8 @@ class CvKeskusScraper(BaseScraper):
 
             offset += self.PAGE_SIZE
 
-            # Safety cap – cvkeskus IT category has ~200-400 jobs
-            if offset >= 900:
+            # Safety cap – cvkeskus IT category has ~350 jobs
+            if offset >= 400:
                 logger.info(f"[{self.name}] Reached offset cap ({offset})")
                 break
 

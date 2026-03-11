@@ -17,8 +17,9 @@ import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
 
-import java.util.Arrays;
-import java.util.Set;
+import org.springframework.transaction.annotation.Transactional;
+
+import java.util.*;
 import java.util.stream.Collectors;
 
 @Service
@@ -60,6 +61,14 @@ public class JobService {
                                  String workplaceType, String jobType,
                                  String sortBy, String sortDir,
                                  int page, int size) {
+        return getJobs(search, company, source, workplaceType, jobType, null, null, null, sortBy, sortDir, page, size);
+    }
+
+    public Page<JobDto> getJobs(String search, String company, String source,
+                                 String workplaceType, String jobType,
+                                 List<String> skills, Integer salaryMin, Integer salaryMax,
+                                 String sortBy, String sortDir,
+                                 int page, int size) {
         Specification<Job> spec = Specification.where(isActive()).and(itRelevant());
 
         if (StringUtils.hasText(search)) {
@@ -77,6 +86,17 @@ public class JobService {
         if (StringUtils.hasText(jobType)) {
             spec = spec.and(jobTypeFilter(jobType));
         }
+        if (skills != null && !skills.isEmpty()) {
+            for (String skill : skills) {
+                spec = spec.and(skillFilter(skill));
+            }
+        }
+        if (salaryMin != null) {
+            spec = spec.and(salaryMinFilter(salaryMin));
+        }
+        if (salaryMax != null) {
+            spec = spec.and(salaryMaxFilter(salaryMax));
+        }
 
         Sort sort = Sort.by(Sort.Direction.fromString(sortDir != null ? sortDir : "DESC"),
                 sortBy != null ? sortBy : "dateScraped");
@@ -89,6 +109,22 @@ public class JobService {
         Job job = jobRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Job not found"));
         return jobMapper.toDto(job);
+    }
+
+    @Transactional
+    public void setJobActive(Long id, boolean active) {
+        Job job = jobRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Job not found"));
+        job.setIsActive(active);
+        jobRepository.save(job);
+    }
+
+    public Map<String, Object> getJobStats() {
+        Map<String, Object> stats = new LinkedHashMap<>();
+        stats.put("totalJobs", jobRepository.count());
+        stats.put("activeJobs", jobRepository.countByIsActiveTrue());
+        stats.put("sources", jobRepository.findDistinctSources());
+        return stats;
     }
 
     public JobFilterDto getFilters() {
@@ -129,6 +165,33 @@ public class JobService {
 
     private Specification<Job> jobTypeFilter(String type) {
         return (root, query, cb) -> cb.equal(root.get("jobType"), JobType.valueOf(type));
+    }
+
+    private Specification<Job> skillFilter(String skill) {
+        return (root, query, cb) -> {
+            String sanitized = skill.replace("\"", "").replace("'", "");
+            String pattern = "%\"" + sanitized + "\"%";
+            return cb.like(
+                    root.get("skills").as(String.class),
+                    pattern);
+        };
+    }
+
+    private Specification<Job> salaryMinFilter(Integer min) {
+        return (root, query, cb) -> cb.greaterThanOrEqualTo(root.get("salaryMax"), min);
+    }
+
+    public List<String> getSuggestions(String query) {
+        Pageable top5 = PageRequest.of(0, 5);
+        List<String> companies = jobRepository.findCompanySuggestions(query, top5);
+        List<String> titles = jobRepository.findTitleSuggestions(query, PageRequest.of(0, 3));
+        List<String> result = new java.util.ArrayList<>(companies);
+        result.addAll(titles);
+        return result.stream().distinct().limit(8).collect(Collectors.toList());
+    }
+
+    private Specification<Job> salaryMaxFilter(Integer max) {
+        return (root, query, cb) -> cb.lessThanOrEqualTo(root.get("salaryMin"), max);
     }
 
     private Specification<Job> itRelevant() {

@@ -3,6 +3,7 @@ package ee.itjobs.controller;
 import ee.itjobs.dto.match.JobMatchScoreDto;
 import ee.itjobs.dto.match.MatchResultDto;
 import ee.itjobs.service.MatchService;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
@@ -15,6 +16,7 @@ import java.util.List;
 @RestController
 @RequestMapping("/api/match")
 @RequiredArgsConstructor
+@Tag(name = "CV Matching")
 public class MatchController {
 
     private final MatchService matchService;

@@ -233,6 +233,7 @@ public class MatchService {
                         .job(jobMapper.toDto(job))
                         .matchPercentage(result.matchPercentage())
                         .matchedSkills(new ArrayList<>(result.matchedSkills()))
+                        .matchExplanation(result.explanation())
                         .build());
             }
         }
@@ -279,7 +280,7 @@ public class MatchService {
         return extractProfile(profile.getCvRawText());
     }
 
-    private record JobScore(int matchPercentage, Set<String> matchedSkills) {}
+    private record JobScore(int matchPercentage, Set<String> matchedSkills, String explanation) {}
 
     private JobScore scoreJob(CVProfile profile, Job job) {
         String jobText = ((job.getTitle() != null ? job.getTitle() : "") + " " +
@@ -363,6 +364,28 @@ public class MatchService {
         int total = (int) Math.round(skillScore * 50 + titleScore * 20 + seniorityScore * 10 + descScore * 20);
         total = Math.min(total, 100);
 
-        return new JobScore(total, matchedSkills);
+        // Build explanation
+        StringBuilder explanation = new StringBuilder();
+        explanation.append("Skills (50%): ");
+        if (matchedSkills.isEmpty()) {
+            explanation.append("No matching skills");
+        } else {
+            explanation.append(String.join(", ", matchedSkills));
+        }
+        explanation.append(String.format(" [%.0f%%]", skillScore * 100));
+
+        explanation.append(" | Title (20%): ");
+        explanation.append(String.format("%.0f%%", titleScore * 100));
+
+        explanation.append(" | Seniority (10%): ");
+        String profileLevel = profile.roleLevel() != null ? profile.roleLevel() : "unknown";
+        String jobLevel = jobIsSenior ? "senior" : (jobIsJunior ? "junior" : "mid");
+        explanation.append(profileLevel).append(" → ").append(jobLevel);
+        explanation.append(String.format(" [%.0f%%]", seniorityScore * 100));
+
+        explanation.append(" | Keywords (20%): ");
+        explanation.append(String.format("%.0f%%", descScore * 100));
+
+        return new JobScore(total, matchedSkills, explanation.toString());
     }
 }

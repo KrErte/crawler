@@ -3,6 +3,7 @@
 from ee_it_jobs.scrapers.cvee import CvEeScraper
 from ee_it_jobs.scrapers.cvkeskus import CvKeskusScraper
 from ee_it_jobs.scrapers.tootukassa import TootukassaScraper
+from ee_it_jobs.scrapers.kandideeri import KandideeriScraper
 from ee_it_jobs.scrapers.lever import LeverScraper
 from ee_it_jobs.scrapers.greenhouse import GreenhouseScraper
 from ee_it_jobs.scrapers.smartrecruiters import SmartRecruitersScraper
@@ -17,10 +18,13 @@ SCRAPER_CONFIGS: list[tuple[type, dict]] = [
     (CvEeScraper, {}),
     (CvKeskusScraper, {}),
     (TootukassaScraper, {}),
+    (KandideeriScraper, {}),
 
     # Lever ATS
     (LeverScraper, {"company_slug": "pipedrive", "company_name": "Pipedrive"}),
     (LeverScraper, {"company_slug": "seb", "company_name": "SEB", "api_host": "api.eu.lever.co"}),
+    (LeverScraper, {"company_slug": "coinspaid", "company_name": "CoinsPaid", "api_host": "api.eu.lever.co"}),
+    (LeverScraper, {"company_slug": "quadcode", "company_name": "Quadcode", "api_host": "api.eu.lever.co"}),
 
     # Greenhouse ATS
     (GreenhouseScraper, {"board_token": "veriff", "company_name": "Veriff"}),
@@ -41,6 +45,7 @@ SCRAPER_CONFIGS: list[tuple[type, dict]] = [
     (TeamtailorScraper, {"base_url": "https://starship.teamtailor.com", "company_name": "Starship Technologies"}),
     (TeamtailorScraper, {"base_url": "https://luminorbank.teamtailor.com", "company_name": "Luminor"}),
     (TeamtailorScraper, {"base_url": "https://jobs.swedbank.com", "company_name": "Swedbank"}),
+    (TeamtailorScraper, {"base_url": "https://thorgate.teamtailor.com", "company_name": "Thorgate"}),
 
     # Custom
     (NortalScraper, {}),

@@ -1,0 +1,98 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+body {
+  @apply bg-dark-900 text-gray-200 font-sans;
+  margin: 0;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+::-webkit-scrollbar {
+  width: 8px;
+}
+::-webkit-scrollbar-track {
+  @apply bg-dark-900;
+}
+::-webkit-scrollbar-thumb {
+  @apply bg-dark-600 rounded;
+}
+
+input, select, textarea {
+  @apply bg-dark-700 border border-dark-600 text-gray-200 rounded-lg px-4 py-2 focus:outline-none focus:border-accent;
+}
+
+.btn-primary {
+  @apply bg-accent text-dark-900 font-semibold px-6 py-2 rounded-lg hover:bg-accent-hover transition-colors;
+}
+
+.btn-secondary {
+  @apply bg-dark-700 text-gray-200 px-6 py-2 rounded-lg border border-dark-600 hover:bg-dark-600 transition-colors;
+}
+
+.card {
+  @apply bg-dark-800 rounded-xl border border-dark-700 p-6;
+}
+
+/* Light mode overrides */
+html:not(.dark) {
+  body {
+    background-color: #f8fafc;
+    color: #0f172a;
+  }
+
+  ::-webkit-scrollbar-track {
+    background: #f8fafc;
+  }
+  ::-webkit-scrollbar-thumb {
+    background: #cbd5e1;
+  }
+
+  input, select, textarea {
+    background-color: #ffffff;
+    border-color: #e2e8f0;
+    color: #0f172a;
+
+    &::placeholder {
+      color: #94a3b8;
+    }
+
+    &:focus {
+      border-color: #38bdf8;
+    }
+  }
+
+  .card {
+    background-color: #ffffff;
+    border-color: #e2e8f0;
+  }
+
+  .btn-secondary {
+    background-color: #f1f5f9;
+    color: #0f172a;
+    border-color: #e2e8f0;
+
+    &:hover {
+      background-color: #e2e8f0;
+    }
+  }
+
+  .bg-dark-900 { background-color: #f8fafc !important; }
+  .bg-dark-800 { background-color: #ffffff !important; }
+  .bg-dark-700 { background-color: #f1f5f9 !important; }
+  .bg-dark-600 { background-color: #e2e8f0 !important; }
+  .border-dark-700 { border-color: #e2e8f0 !important; }
+  .border-dark-600 { border-color: #cbd5e1 !important; }
+  .border-dark-800 { border-color: #e2e8f0 !important; }
+  .text-white { color: #0f172a !important; }
+  .text-gray-200 { color: #1e293b !important; }
+  .text-gray-300 { color: #334155 !important; }
+  .text-gray-400 { color: #64748b !important; }
+  .text-gray-500 { color: #94a3b8 !important; }
+  .text-gray-600 { color: #94a3b8 !important; }
+  .hover\:text-white:hover { color: #0f172a !important; }
+  .hover\:border-dark-600:hover { border-color: #cbd5e1 !important; }
+}

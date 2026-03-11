@@ -12,3 +12,18 @@ env/
 output/
 *.log
 .env
+.env.*
+!.env.example
+
+# Java/Maven
+target/
+*.class
+*.jar
+
+# Node
+node_modules/
+
+# IDE
+.vscode/
+.idea/
+*.iml

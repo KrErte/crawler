@@ -15,21 +15,40 @@ import { AuthService } from '../../services/auth.service';
           <div class="bg-red-900/30 border border-red-800 text-red-400 px-4 py-2 rounded-lg mb-4">{{ error }}</div>
         }
         <form (ngSubmit)="onSubmit()" class="space-y-4">
-          <div>
-            <label class="block text-sm text-gray-400 mb-1">Email</label>
-            <input type="email" [(ngModel)]="email" name="email" autocomplete="username" class="w-full" required />
-          </div>
-          <div>
-            <label class="block text-sm text-gray-400 mb-1">Password</label>
-            <input type="password" [(ngModel)]="password" name="password" autocomplete="current-password" class="w-full" required />
-          </div>
+          @if (!needsTwoFactor) {
+            <div>
+              <label class="block text-sm text-gray-400 mb-1">Email</label>
+              <input type="email" [(ngModel)]="email" name="email" autocomplete="username" class="w-full" required />
+            </div>
+            <div>
+              <label class="block text-sm text-gray-400 mb-1">Password</label>
+              <input type="password" [(ngModel)]="password" name="password" autocomplete="current-password" class="w-full" required />
+            </div>
+          } @else {
+            <div>
+              <label class="block text-sm text-gray-400 mb-1">Two-Factor Code</label>
+              <p class="text-gray-500 text-xs mb-2">Enter the 6-digit code from your authenticator app</p>
+              <input type="text" [(ngModel)]="totpCode" name="totpCode" class="w-full text-center text-2xl tracking-widest"
+                maxlength="6" autocomplete="one-time-code" required />
+            </div>
+          }
           <button type="submit" class="btn-primary w-full" [disabled]="loading">
-            {{ loading ? 'Logging in...' : 'Login' }}
+            {{ loading ? 'Logging in...' : (needsTwoFactor ? 'Verify' : 'Login') }}
           </button>
         </form>
-        <p class="text-center text-gray-500 mt-4">
-          Don't have an account? <a routerLink="/register" class="text-accent hover:text-accent-hover">Register</a>
-        </p>
+        @if (needsTwoFactor) {
+          <button (click)="needsTwoFactor = false; error = ''" class="text-gray-500 hover:text-gray-400 text-sm mt-3 block text-center w-full">
+            &larr; Back to login
+          </button>
+        }
+        <div class="text-center mt-4 space-y-2">
+          <p class="text-gray-500">
+            <a routerLink="/forgot-password" class="text-accent hover:text-accent-hover">Forgot password?</a>
+          </p>
+          <p class="text-gray-500">
+            Don't have an account? <a routerLink="/register" class="text-accent hover:text-accent-hover">Register</a>
+          </p>
+        </div>
       </div>
     </div>
   `
@@ -37,17 +56,33 @@ import { AuthService } from '../../services/auth.service';
 export class LoginComponent {
   email = '';
   password = '';
+  totpCode = '';
   error = '';
   loading = false;
+  needsTwoFactor = false;
 
   constructor(private auth: AuthService, private router: Router) {}
 
   onSubmit() {
     this.loading = true;
     this.error = '';
-    this.auth.login({ email: this.email, password: this.password }).subscribe({
-      next: () => { this.router.navigate(['/jobs']); },
-      error: (err) => { this.error = err.error?.message || 'Login failed'; this.loading = false; }
+    this.auth.login({
+      email: this.email,
+      password: this.password,
+      totpCode: this.needsTwoFactor ? this.totpCode : undefined
+    }).subscribe({
+      next: (res) => {
+        if (res.requiresTwoFactor) {
+          this.needsTwoFactor = true;
+          this.loading = false;
+        } else {
+          this.router.navigate(['/jobs']);
+        }
+      },
+      error: (err) => {
+        this.error = err.error?.message || 'Login failed';
+        this.loading = false;
+      }
     });
   }
 }

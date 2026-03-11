@@ -11,6 +11,11 @@ import { AuthService } from '../../services/auth.service';
     <div class="flex items-center justify-center min-h-screen -mt-16 px-4">
       <div class="card w-full max-w-md">
         <h2 class="text-2xl font-bold text-white mb-6 text-center">Create Account</h2>
+        @if (verificationSent) {
+          <div class="bg-green-900/30 border border-green-800 text-green-400 px-4 py-3 rounded-lg mb-4">
+            A verification email has been sent to your email address. Please check your inbox.
+          </div>
+        }
         @if (error) {
           <div class="bg-red-900/30 border border-red-800 text-red-400 px-4 py-2 rounded-lg mb-4">{{ error }}</div>
         }
@@ -51,6 +56,7 @@ export class RegisterComponent {
   lastName = '';
   error = '';
   loading = false;
+  verificationSent = false;
 
   constructor(private auth: AuthService, private router: Router) {}
 
@@ -61,7 +67,7 @@ export class RegisterComponent {
       email: this.email, password: this.password,
       firstName: this.firstName, lastName: this.lastName
     }).subscribe({
-      next: () => { this.router.navigate(['/jobs']); },
+      next: () => { this.verificationSent = true; this.router.navigate(['/jobs']); },
       error: (err) => { this.error = err.error?.message || 'Registration failed'; this.loading = false; }
     });
   }
