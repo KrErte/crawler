@@ -294,46 +294,42 @@ public class MatchService {
         Set<String> matchedSkills = new HashSet<>(profile.skills());
         matchedSkills.retainAll(jobSkills);
 
+        // Skill score: blend of coverage (how many job skills you have) and absolute count
         double skillCoverage = jobSkills.isEmpty() ? 0 : (double) matchedSkills.size() / jobSkills.size();
-        double absBonus = Math.min(matchedSkills.size() * 0.35, 1.0);
-        double skillScore = skillCoverage * 0.6 + absBonus * 0.4;
+        double absBonus = Math.min(matchedSkills.size() / 4.0, 1.0);  // 4 matched skills = max
+        double skillScore = skillCoverage * 0.4 + absBonus * 0.6;     // absolute count weighted higher
 
-        // 2. Title relevance (25% weight)
+        // 2. Title relevance (20% weight) — match CV skills against title
         String titleLower = job.getTitle() != null ? job.getTitle().toLowerCase() : "";
-        long titleOverlap = profile.allKeywords().stream()
-                .filter(kw -> titleLower.contains(kw))
+        long titleSkillHits = profile.skills().stream()
+                .filter(skill -> titleLower.contains(skill))
                 .count();
-        double titleScore = Math.min(titleOverlap / 2.0, 1.0);
+        long titleKeywordHits = profile.allKeywords().stream()
+                .filter(kw -> kw.length() > 3 && titleLower.contains(kw))
+                .count();
+        double titleScore = Math.min((titleSkillHits * 2 + titleKeywordHits) / 3.0, 1.0);
 
-        // 3. Seniority match (15% weight)
-        double seniorityScore = 0.0;
+        // 3. Seniority match (10% weight)
+        double seniorityScore = 0.5;  // neutral baseline
         if (profile.roleLevel() != null && titleLower.contains(profile.roleLevel())) {
             seniorityScore = 1.0;
-        } else {
-            for (String kw : SENIOR_KEYWORDS) {
+        } else if (profile.roleLevel() != null) {
+            // Penalize mismatch
+            for (String kw : (profile.roleLevel().equals("senior") ? JUNIOR_KEYWORDS : SENIOR_KEYWORDS)) {
                 if (titleLower.contains(kw)) {
-                    seniorityScore = 0.3;
+                    seniorityScore = 0.1;
                     break;
-                }
-            }
-            if (seniorityScore == 0.0) {
-                for (String kw : JUNIOR_KEYWORDS) {
-                    if (titleLower.contains(kw)) {
-                        seniorityScore = 0.3;
-                        break;
-                    }
                 }
             }
         }
 
-        // 4. Department relevance (15% weight)
-        String deptLower = job.getDepartment() != null ? job.getDepartment().toLowerCase() : "";
-        long deptOverlap = profile.allKeywords().stream()
-                .filter(kw -> deptLower.contains(kw))
+        // 4. Description keyword overlap (20% weight)
+        long descKeywordHits = profile.skills().stream()
+                .filter(skill -> jobText.contains(skill))
                 .count();
-        double deptScore = Math.min(deptOverlap / 2.0, 1.0);
+        double descScore = Math.min(descKeywordHits / 3.0, 1.0);  // 3 skill hits in desc = max
 
-        int total = (int) Math.round(skillScore * 45 + titleScore * 25 + seniorityScore * 15 + deptScore * 15);
+        int total = (int) Math.round(skillScore * 50 + titleScore * 20 + seniorityScore * 10 + descScore * 20);
         total = Math.min(total, 100);
 
         return new JobScore(total, matchedSkills);
