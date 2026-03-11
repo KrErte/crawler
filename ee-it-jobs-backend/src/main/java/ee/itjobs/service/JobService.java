@@ -30,16 +30,19 @@ public class JobService {
 
     private static final Set<String> IT_KEYWORDS = Set.of(
             "developer", "engineer", "programmer", "architect", "devops", "sysadmin",
-            "analyst", "qa", "tester", "testing", "software", "hardware", "network",
-            "security", "cloud", "full-stack", "fullstack", "frontend", "front-end",
-            "backend", "back-end", "mobile", "web", "machine learning", "data",
-            "ai", "ml", "it ", "tech", "scrum", "agile", "product owner",
-            "product manager", "ux", "ui", "design", "devrel",
+            "tester", "testing", "software", "full-stack", "fullstack",
+            "frontend", "front-end", "backend", "back-end",
+            "machine learning", "data engineer", "data scientist",
+            "scrum", "agile", "product owner", "product manager",
+            "devrel", "devops", "sre",
             "arendaja", "insener", "tarkvara", "andme", "süsteemi",
             "administraator", "küber", "arvuti", "infotehnoloog",
-            "support", "helpdesk", "help desk", "infrastructure",
-            "database", "dba", "system", "automation", "platform",
-            "embedded", "firmware", "robotics", "blockchain", "crypto"
+            "helpdesk", "help desk", "infrastructure",
+            "database", "automation", "platform",
+            "embedded", "firmware", "robotics", "blockchain",
+            "information technology", "cloud engineer", "cloud architect",
+            "it support", "tech lead", "technical lead", "cto",
+            "it specialist", "it manager", "it director"
     );
 
     public static boolean isItRelated(String title, String department) {

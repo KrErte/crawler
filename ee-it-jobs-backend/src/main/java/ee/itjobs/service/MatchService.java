@@ -179,12 +179,19 @@ public class MatchService {
             }
         }
 
-        // Detect role level
+        // Detect role level — years of experience takes priority
         String roleLevel = null;
-        for (String kw : SENIOR_KEYWORDS) {
-            if (lower.contains(kw)) {
-                roleLevel = "senior";
-                break;
+        if (yearsExperience != null) {
+            if (yearsExperience >= 5) roleLevel = "senior";
+            else if (yearsExperience >= 2) roleLevel = "mid";
+            else roleLevel = "junior";
+        }
+        if (roleLevel == null) {
+            for (String kw : SENIOR_KEYWORDS) {
+                if (lower.contains(kw)) {
+                    roleLevel = "senior";
+                    break;
+                }
             }
         }
         if (roleLevel == null) {
@@ -311,15 +318,21 @@ public class MatchService {
 
         // 3. Seniority match (10% weight)
         double seniorityScore = 0.5;  // neutral baseline
-        if (profile.roleLevel() != null && titleLower.contains(profile.roleLevel())) {
-            seniorityScore = 1.0;
-        } else if (profile.roleLevel() != null) {
-            // Penalize mismatch
-            for (String kw : (profile.roleLevel().equals("senior") ? JUNIOR_KEYWORDS : SENIOR_KEYWORDS)) {
-                if (titleLower.contains(kw)) {
-                    seniorityScore = 0.1;
-                    break;
-                }
+        boolean jobIsSenior = SENIOR_KEYWORDS.stream().anyMatch(titleLower::contains);
+        boolean jobIsJunior = JUNIOR_KEYWORDS.stream().anyMatch(titleLower::contains);
+        if (profile.roleLevel() != null) {
+            if (profile.roleLevel().equals("senior")) {
+                if (jobIsSenior) seniorityScore = 1.0;        // senior matches senior
+                else if (jobIsJunior) seniorityScore = 0.1;   // senior applying to junior
+                else seniorityScore = 0.6;                     // senior applying to mid-level
+            } else if (profile.roleLevel().equals("mid")) {
+                if (jobIsJunior) seniorityScore = 0.3;         // mid applying to junior
+                else if (jobIsSenior) seniorityScore = 0.5;    // mid applying to senior
+                else seniorityScore = 0.8;                     // mid applying to mid
+            } else {  // junior
+                if (jobIsJunior) seniorityScore = 1.0;
+                else if (jobIsSenior) seniorityScore = 0.1;
+                else seniorityScore = 0.5;
             }
         }
 
