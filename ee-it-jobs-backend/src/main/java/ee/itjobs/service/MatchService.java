@@ -301,38 +301,56 @@ public class MatchService {
         Set<String> matchedSkills = new HashSet<>(profile.skills());
         matchedSkills.retainAll(jobSkills);
 
-        // Skill score: blend of coverage (how many job skills you have) and absolute count
-        double skillCoverage = jobSkills.isEmpty() ? 0 : (double) matchedSkills.size() / jobSkills.size();
-        double absBonus = Math.min(matchedSkills.size() / 4.0, 1.0);  // 4 matched skills = max
-        double skillScore = skillCoverage * 0.4 + absBonus * 0.6;     // absolute count weighted higher
-
-        // 2. Title relevance (20% weight) — match CV skills against title
         String titleLower = job.getTitle() != null ? job.getTitle().toLowerCase() : "";
+
+        // Skill score: blend of coverage and absolute count
+        double skillScore;
+        if (jobSkills.isEmpty()) {
+            // No skills detected in job listing — give baseline if it's a dev/engineer role
+            boolean titleIsDevRole = titleLower.matches(".*(developer|engineer|arendaja|programmer|architect).*");
+            skillScore = titleIsDevRole ? 0.4 : 0.15;
+        } else {
+            double skillCoverage = (double) matchedSkills.size() / jobSkills.size();
+            double absBonus = Math.min(matchedSkills.size() / 3.0, 1.0);
+            skillScore = skillCoverage * 0.35 + absBonus * 0.65;
+        }
+
+        // 2. Title relevance (20% weight) — match CV skills and role keywords against title
         long titleSkillHits = profile.skills().stream()
                 .filter(skill -> titleLower.contains(skill))
                 .count();
+        // Also match role-type words (developer, engineer, etc.) for cross-language support
+        long roleWordHits = 0;
+        for (String roleWord : List.of("developer", "engineer", "architect", "devops",
+                "full-stack", "fullstack", "backend", "frontend", "software",
+                "arendaja", "insener", "tarkvara")) {
+            if (titleLower.contains(roleWord) && profile.allKeywords().stream().anyMatch(kw -> kw.contains(roleWord)
+                    || roleWord.contains(kw))) {
+                roleWordHits++;
+            }
+        }
         long titleKeywordHits = profile.allKeywords().stream()
                 .filter(kw -> kw.length() > 3 && titleLower.contains(kw))
                 .count();
-        double titleScore = Math.min((titleSkillHits * 2 + titleKeywordHits) / 3.0, 1.0);
+        double titleScore = Math.min((titleSkillHits * 2 + roleWordHits + titleKeywordHits) / 3.0, 1.0);
 
-        // 3. Seniority match (10% weight)
-        double seniorityScore = 0.5;  // neutral baseline
+        // 3. Seniority match (10% weight) — don't penalize overqualification too harshly
+        double seniorityScore = 0.5;
         boolean jobIsSenior = SENIOR_KEYWORDS.stream().anyMatch(titleLower::contains);
         boolean jobIsJunior = JUNIOR_KEYWORDS.stream().anyMatch(titleLower::contains);
         if (profile.roleLevel() != null) {
             if (profile.roleLevel().equals("senior")) {
-                if (jobIsSenior) seniorityScore = 1.0;        // senior matches senior
-                else if (jobIsJunior) seniorityScore = 0.1;   // senior applying to junior
-                else seniorityScore = 0.6;                     // senior applying to mid-level
+                if (jobIsSenior) seniorityScore = 1.0;
+                else if (jobIsJunior) seniorityScore = 0.4;  // overqualified but capable
+                else seniorityScore = 0.7;
             } else if (profile.roleLevel().equals("mid")) {
-                if (jobIsJunior) seniorityScore = 0.3;         // mid applying to junior
-                else if (jobIsSenior) seniorityScore = 0.5;    // mid applying to senior
-                else seniorityScore = 0.8;                     // mid applying to mid
-            } else {  // junior
+                if (jobIsJunior) seniorityScore = 0.5;
+                else if (jobIsSenior) seniorityScore = 0.5;
+                else seniorityScore = 0.9;
+            } else {
                 if (jobIsJunior) seniorityScore = 1.0;
-                else if (jobIsSenior) seniorityScore = 0.1;
-                else seniorityScore = 0.5;
+                else if (jobIsSenior) seniorityScore = 0.2;
+                else seniorityScore = 0.6;
             }
         }
 
@@ -340,7 +358,7 @@ public class MatchService {
         long descKeywordHits = profile.skills().stream()
                 .filter(skill -> jobText.contains(skill))
                 .count();
-        double descScore = Math.min(descKeywordHits / 3.0, 1.0);  // 3 skill hits in desc = max
+        double descScore = Math.min(descKeywordHits / 3.0, 1.0);
 
         int total = (int) Math.round(skillScore * 50 + titleScore * 20 + seniorityScore * 10 + descScore * 20);
         total = Math.min(total, 100);
