@@ -3,6 +3,7 @@ package ee.itjobs.controller;
 import ee.itjobs.dto.job.JobDto;
 import ee.itjobs.dto.job.JobFilterDto;
 import ee.itjobs.service.JobService;
+import ee.itjobs.service.TranslationService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
@@ -21,6 +22,7 @@ import java.util.Map;
 public class JobController {
 
     private final JobService jobService;
+    private final TranslationService translationService;
 
     @GetMapping
     @Operation(summary = "Get paginated job listings with filters")
@@ -72,5 +74,27 @@ public class JobController {
     public ResponseEntity<Void> toggleJobActive(@PathVariable Long id, @RequestParam boolean active) {
         jobService.setJobActive(id, active);
         return ResponseEntity.ok().build();
+    }
+
+    @GetMapping("/{id}/translate")
+    @Operation(summary = "Get translated job description")
+    public ResponseEntity<Map<String, String>> translateJob(
+            @PathVariable Long id,
+            @RequestParam(defaultValue = "en") String targetLang) {
+        JobDto job = jobService.getJob(id);
+        String description = job.getFullDescription() != null ? job.getFullDescription() : job.getDescriptionSnippet();
+        if (description == null || description.isBlank()) {
+            return ResponseEntity.ok(Map.of("title", job.getTitle(), "description", ""));
+        }
+
+        String sourceLang = translationService.isEstonian(description) ? "et" : "en";
+        String translatedTitle = translationService.translate(job.getTitle(), sourceLang, targetLang);
+        String translatedDesc = translationService.translate(description, sourceLang, targetLang);
+
+        return ResponseEntity.ok(Map.of(
+                "title", translatedTitle,
+                "description", translatedDesc,
+                "detectedLang", sourceLang
+        ));
     }
 }

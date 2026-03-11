@@ -67,6 +67,9 @@ public class ScraperRegistry {
                     json.get("base_url"), config.getCompanyName());
             case "NORTAL" -> new NortalScraper(webClient, rateLimiter);
             case "HELMES" -> new HelmesScraper(webClient, rateLimiter);
+            case "MEETFRANK" -> new MeetFrankScraper(webClient, rateLimiter);
+            case "INDEED" -> new IndeedScraper(webClient, rateLimiter);
+            case "TOOTUKASSA" -> new TootukassaScraper(webClient, rateLimiter);
             default -> {
                 log.warn("Unknown scraper type: {}", config.getScraperType());
                 yield null;

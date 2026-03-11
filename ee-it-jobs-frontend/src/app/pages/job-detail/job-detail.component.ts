@@ -70,14 +70,29 @@ import { SkeletonComponent } from '../../components/skeleton/skeleton.component'
               }
             </button>
           </div>
-          @if (job.fullDescription) {
-            <div class="border-t border-dark-700 pt-6">
-              <h3 class="text-lg font-semibold text-white mb-3">Description</h3>
-              <div class="text-gray-300 whitespace-pre-wrap">{{ job.fullDescription }}</div>
+          @if (job.skills && job.skills.length > 0) {
+            <div class="flex flex-wrap gap-2 mb-6">
+              @for (skill of job.skills; track skill) {
+                <span class="px-2.5 py-1 rounded-full bg-accent/10 text-accent text-xs font-medium">{{ skill }}</span>
+              }
             </div>
-          } @else if (job.descriptionSnippet) {
+          }
+          @if (job.fullDescription || job.descriptionSnippet) {
             <div class="border-t border-dark-700 pt-6">
-              <p class="text-gray-400">{{ job.descriptionSnippet }}</p>
+              <div class="flex items-center justify-between mb-3">
+                <h3 class="text-lg font-semibold text-white">Description</h3>
+                <button (click)="translateDescription()" class="text-xs px-3 py-1.5 rounded-lg bg-dark-700 text-gray-400 hover:text-accent hover:bg-dark-600 transition-colors" [disabled]="translating">
+                  {{ translating ? 'Translating...' : translatedDesc ? 'Show Original' : 'Translate' }}
+                </button>
+              </div>
+              @if (translatedDesc && showTranslation) {
+                <div class="mb-3 px-3 py-1.5 rounded bg-accent/5 border border-accent/20 text-xs text-accent">
+                  Translated from {{ detectedLang === 'et' ? 'Estonian' : 'English' }}
+                </div>
+                <div class="text-gray-300 whitespace-pre-wrap">{{ translatedDesc }}</div>
+              } @else {
+                <div class="text-gray-300 whitespace-pre-wrap">{{ job.fullDescription || job.descriptionSnippet }}</div>
+              }
             </div>
           }
         </div>
@@ -105,6 +120,10 @@ export class JobDetailComponent implements OnInit {
   applied = false;
   showCopied = false;
   showDuplicateWarning = false;
+  translatedDesc: string | null = null;
+  translating = false;
+  showTranslation = false;
+  detectedLang = '';
 
   constructor(
     private route: ActivatedRoute,
@@ -152,6 +171,25 @@ export class JobDetailComponent implements OnInit {
           this.showDuplicateWarning = true;
         }
       }
+    });
+  }
+
+  translateDescription() {
+    if (!this.job) return;
+    if (this.translatedDesc) {
+      this.showTranslation = !this.showTranslation;
+      return;
+    }
+    this.translating = true;
+    const targetLang = localStorage.getItem('lang') === 'et' ? 'et' : 'en';
+    this.jobService.translateJob(this.job.id, targetLang).subscribe({
+      next: (result) => {
+        this.translatedDesc = result.description;
+        this.detectedLang = result.detectedLang;
+        this.showTranslation = true;
+        this.translating = false;
+      },
+      error: () => { this.translating = false; }
     });
   }
 

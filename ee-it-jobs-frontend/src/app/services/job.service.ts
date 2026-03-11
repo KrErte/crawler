@@ -42,4 +42,10 @@ export class JobService {
   getSuggestions(query: string): Observable<string[]> {
     return this.http.get<string[]>(`${this.API}/suggest`, { params: { q: query } });
   }
+
+  translateJob(id: number, targetLang: string): Observable<{ title: string; description: string; detectedLang: string }> {
+    return this.http.get<{ title: string; description: string; detectedLang: string }>(
+      `${this.API}/${id}/translate`, { params: { targetLang } }
+    );
+  }
 }
