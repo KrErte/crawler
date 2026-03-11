@@ -131,7 +131,7 @@ export class JobsComponent implements OnInit {
   }
 
   private sortJobsByMatch() {
-    this.jobs.sort((a, b) => {
+    this.jobs = [...this.jobs].sort((a, b) => {
       const scoreA = this.matchScores.get(a.id)?.matchPercentage ?? 0;
       const scoreB = this.matchScores.get(b.id)?.matchPercentage ?? 0;
       return scoreB - scoreA;
