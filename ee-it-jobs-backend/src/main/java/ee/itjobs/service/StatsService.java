@@ -1,6 +1,7 @@
 package ee.itjobs.service;
 
 import lombok.RequiredArgsConstructor;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Service;
 
@@ -12,17 +13,20 @@ public class StatsService {
 
     private final JdbcTemplate jdbcTemplate;
 
+    @Cacheable(value = "stats-skills", key = "#limit")
     public List<Map<String, Object>> getTopSkills(int limit) {
         return jdbcTemplate.queryForList(
             "SELECT skill, COUNT(*) as count FROM jobs, jsonb_array_elements_text(skills) AS skill " +
             "WHERE is_active = true GROUP BY skill ORDER BY count DESC LIMIT ?", limit);
     }
 
+    @Cacheable("stats-sources")
     public List<Map<String, Object>> getJobsBySource() {
         return jdbcTemplate.queryForList(
             "SELECT source, COUNT(*) as count FROM jobs WHERE is_active = true GROUP BY source ORDER BY count DESC");
     }
 
+    @Cacheable(value = "stats-trends", key = "#days")
     public List<Map<String, Object>> getDailyJobTrends(int days) {
         return jdbcTemplate.queryForList(
             "SELECT date_scraped as date, COUNT(*) as count FROM jobs " +
@@ -30,6 +34,7 @@ public class StatsService {
             "GROUP BY date_scraped ORDER BY date_scraped", days);
     }
 
+    @Cacheable("stats-overview")
     public Map<String, Object> getAdminOverview() {
         Map<String, Object> overview = new LinkedHashMap<>();
         overview.put("totalJobs", jdbcTemplate.queryForObject(
@@ -51,6 +56,7 @@ public class StatsService {
         return overview;
     }
 
+    @Cacheable("stats-salary-dist")
     public List<Map<String, Object>> getSalaryDistribution() {
         return jdbcTemplate.queryForList(
             "SELECT " +
@@ -66,12 +72,14 @@ public class StatsService {
             "GROUP BY range ORDER BY MIN(salary_max)");
     }
 
+    @Cacheable(value = "stats-top-companies", key = "#limit")
     public List<Map<String, Object>> getTopCompanies(int limit) {
         return jdbcTemplate.queryForList(
             "SELECT company, COUNT(*) as count FROM jobs WHERE is_active = true " +
             "GROUP BY company ORDER BY count DESC LIMIT ?", limit);
     }
 
+    @Cacheable("stats-workplace")
     public List<Map<String, Object>> getWorkplaceTypeDistribution() {
         return jdbcTemplate.queryForList(
             "SELECT workplace_type as type, COUNT(*) as count FROM jobs " +
@@ -79,6 +87,7 @@ public class StatsService {
             "GROUP BY workplace_type ORDER BY count DESC");
     }
 
+    @Cacheable("stats-jobtype")
     public List<Map<String, Object>> getJobTypeDistribution() {
         return jdbcTemplate.queryForList(
             "SELECT job_type as type, COUNT(*) as count FROM jobs " +

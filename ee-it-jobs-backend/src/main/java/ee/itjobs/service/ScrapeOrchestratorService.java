@@ -9,6 +9,7 @@ import ee.itjobs.scraper.ScraperRegistry;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.cache.CacheManager;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 
@@ -29,6 +30,7 @@ public class ScrapeOrchestratorService {
     private final DeduplicationService deduplicationService;
     private final ScrapeRunRepository scrapeRunRepository;
     private final WebSocketNotificationService webSocketNotificationService;
+    private final CacheManager cacheManager;
 
     @Value("${app.scraper.max-concurrency}")
     private int maxConcurrency;
@@ -78,6 +80,14 @@ public class ScrapeOrchestratorService {
         return run;
     }
 
+    private void evictAllCaches() {
+        cacheManager.getCacheNames().forEach(name -> {
+            var cache = cacheManager.getCache(name);
+            if (cache != null) cache.clear();
+        });
+        log.info("Evicted all caches after scrape");
+    }
+
     private void executeScrape(ScrapeRun run) {
         List<BaseScraper> scrapers = scraperRegistry.getActiveScrapers();
         ExecutorService executor = Executors.newFixedThreadPool(maxConcurrency);
@@ -125,6 +135,8 @@ public class ScrapeOrchestratorService {
         scrapeRunRepository.save(run);
 
         webSocketNotificationService.notifyScrapeComplete(totalNew.get(), totalJobs.get());
+
+        evictAllCaches();
 
         log.info("Scrape completed: {} total, {} new, {} errors",
                 totalJobs.get(), totalNew.get(), totalErrors.get());

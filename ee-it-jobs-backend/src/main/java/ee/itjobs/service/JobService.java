@@ -14,6 +14,7 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.jpa.domain.Specification;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
 
@@ -127,6 +128,7 @@ public class JobService {
         return stats;
     }
 
+    @Cacheable("job-filters")
     public JobFilterDto getFilters() {
         return JobFilterDto.builder()
                 .companies(jobRepository.findDistinctCompanies())
