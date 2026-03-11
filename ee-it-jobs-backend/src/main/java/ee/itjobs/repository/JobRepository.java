@@ -5,12 +5,19 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
+import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import java.util.List;
 import java.util.Optional;
 
 public interface JobRepository extends JpaRepository<Job, Long>, JpaSpecificationExecutor<Job> {
+
+    @Modifying
+    @Query("UPDATE Job j SET j.isActive = false WHERE j.isActive = true AND j.dateScraped < :cutoff")
+    int deactivateStaleJobs(@Param("cutoff") java.time.LocalDate cutoff);
+
+    long countByIsActiveFalse();
     Optional<Job> findByDedupKey(String dedupKey);
 
     @Query("SELECT DISTINCT j.company FROM Job j WHERE j.isActive = true ORDER BY j.company")

@@ -83,7 +83,7 @@ public abstract class BaseScraper {
                            String description, String salary, String department) {
         String dedupKey = (company + "|" + title + "|" + (location != null ? location : ""))
                 .toLowerCase().trim();
-        return Job.builder()
+        Job.JobBuilder builder = Job.builder()
                 .title(title)
                 .company(company)
                 .location(location)
@@ -95,8 +95,18 @@ public abstract class BaseScraper {
                 .fullDescription(description)
                 .salaryText(salary)
                 .department(department)
-                .dedupKey(dedupKey)
-                .build();
+                .dedupKey(dedupKey);
+
+        // Parse salary text into structured fields
+        String salarySource = salary != null ? salary : description;
+        SalaryParser.ParsedSalary parsed = SalaryParser.parse(salarySource);
+        if (parsed != null) {
+            builder.salaryMin(parsed.min());
+            builder.salaryMax(parsed.max());
+            builder.salaryCurrency(parsed.currency());
+        }
+
+        return builder.build();
     }
 
     protected boolean containsEstoniaLocation(String location) {

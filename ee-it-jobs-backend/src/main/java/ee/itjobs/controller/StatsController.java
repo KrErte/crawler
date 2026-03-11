@@ -33,4 +33,30 @@ public class StatsController {
             @RequestParam(defaultValue = "30") int days) {
         return ResponseEntity.ok(statsService.getDailyJobTrends(days));
     }
+
+    @GetMapping("/overview")
+    public ResponseEntity<Map<String, Object>> getAdminOverview() {
+        return ResponseEntity.ok(statsService.getAdminOverview());
+    }
+
+    @GetMapping("/salary-distribution")
+    public ResponseEntity<List<Map<String, Object>>> getSalaryDistribution() {
+        return ResponseEntity.ok(statsService.getSalaryDistribution());
+    }
+
+    @GetMapping("/top-companies")
+    public ResponseEntity<List<Map<String, Object>>> getTopCompanies(
+            @RequestParam(defaultValue = "15") int limit) {
+        return ResponseEntity.ok(statsService.getTopCompanies(limit));
+    }
+
+    @GetMapping("/workplace-types")
+    public ResponseEntity<List<Map<String, Object>>> getWorkplaceTypes() {
+        return ResponseEntity.ok(statsService.getWorkplaceTypeDistribution());
+    }
+
+    @GetMapping("/job-types")
+    public ResponseEntity<List<Map<String, Object>>> getJobTypes() {
+        return ResponseEntity.ok(statsService.getJobTypeDistribution());
+    }
 }
