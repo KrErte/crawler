@@ -34,7 +34,7 @@ public class JobService {
             "frontend", "front-end", "backend", "back-end",
             "machine learning", "data engineer", "data scientist",
             "scrum", "agile", "product owner", "product manager",
-            "devrel", "devops", "sre",
+            "devrel", "sre",
             "arendaja", "insener", "tarkvara", "andme", "süsteemi",
             "administraator", "küber", "arvuti", "infotehnoloog",
             "helpdesk", "help desk", "infrastructure",
