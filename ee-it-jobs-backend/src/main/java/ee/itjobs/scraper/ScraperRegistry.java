@@ -70,6 +70,8 @@ public class ScraperRegistry {
             case "MEETFRANK" -> new MeetFrankScraper(webClient, rateLimiter);
             case "INDEED" -> new IndeedScraper(webClient, rateLimiter);
             case "TOOTUKASSA" -> new TootukassaScraper(webClient, rateLimiter);
+            case "ASHBY" -> new AshbyScraper(webClient, rateLimiter,
+                    json.get("board_name"), config.getCompanyName());
             default -> {
                 log.warn("Unknown scraper type: {}", config.getScraperType());
                 yield null;
