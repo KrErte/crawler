@@ -71,7 +71,18 @@ import { Job } from '../../models/job.model';
         </div>
       }
       <div class="flex items-center justify-between text-xs text-gray-500">
-        <span>{{ job.source }}</span>
+        @if (job.url) {
+          <a [href]="job.url" target="_blank" rel="noopener noreferrer"
+            (click)="$event.stopPropagation()"
+            class="inline-flex items-center gap-1 hover:text-accent transition-colors">
+            {{ job.source }}
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" class="w-3.5 h-3.5">
+              <path fill-rule="evenodd" d="M4.25 5.5a.75.75 0 00-.75.75v8.5c0 .414.336.75.75.75h8.5a.75.75 0 00.75-.75v-4a.75.75 0 011.5 0v4A2.25 2.25 0 0112.75 17h-8.5A2.25 2.25 0 012 14.75v-8.5A2.25 2.25 0 014.25 4h5a.75.75 0 010 1.5h-5zm4.943-.067a.75.75 0 01.463-.692l4-1.5a.75.75 0 01.975.461l1.5 4a.75.75 0 01-1.45.544l-.78-2.081-4.03 4.03a.75.75 0 11-1.06-1.06l4.03-4.031-2.081-.78a.75.75 0 01-.567-.891z" clip-rule="evenodd" />
+            </svg>
+          </a>
+        } @else {
+          <span>{{ job.source }}</span>
+        }
         <span>{{ job.dateScraped }}</span>
       </div>
     </div>

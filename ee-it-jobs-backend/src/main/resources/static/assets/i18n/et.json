@@ -178,6 +178,10 @@
   "notifications.workplace": "Töökoht",
   "notifications.minSalary": "Minimaalne palk",
   "notifications.skills": "Jälgitavad oskused",
+  "notifications.alertPrefs": "Teavituste eelistused",
+  "notifications.workplaceType": "Töökoha tüüp",
+  "notifications.jobType": "Töö tüüp",
+  "notifications.minSalaryLabel": "Minimaalne palk (EUR)",
 
   "toast.sessionExpired": "Sessioon aegunud. Palun logi uuesti sisse.",
   "toast.serverError": "Serveri viga. Palun proovi hiljem uuesti.",
