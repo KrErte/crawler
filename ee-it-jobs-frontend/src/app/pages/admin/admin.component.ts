@@ -1,18 +1,32 @@
 import { Component, OnInit, OnDestroy } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
+import { FormsModule } from '@angular/forms';
 import { SlicePipe, DecimalPipe } from '@angular/common';
 import { WebSocketService } from '../../services/websocket.service';
+import { AdminService, UserListDto } from '../../services/admin.service';
 import { environment } from '../../../environments/environment';
 import { Subscription } from 'rxjs';
 
 @Component({
   selector: 'app-admin',
   standalone: true,
-  imports: [SlicePipe, DecimalPipe],
+  imports: [SlicePipe, DecimalPipe, FormsModule],
   template: `
     <div class="max-w-6xl mx-auto px-4 py-8">
       <h1 class="text-2xl font-bold text-white mb-6">Admin Dashboard</h1>
 
+      <!-- Tab Navigation -->
+      <div class="flex gap-2 mb-6">
+        @for (tab of adminTabs; track tab.value) {
+          <button (click)="activeTab = tab.value"
+            class="px-4 py-2 rounded-lg text-sm transition-colors"
+            [class]="activeTab === tab.value ? 'bg-accent text-dark-900 font-semibold' : 'bg-dark-800 text-gray-400 hover:text-white'">
+            {{ tab.label }}
+          </button>
+        }
+      </div>
+
+      @if (activeTab === 'dashboard') {
       <!-- Overview Cards -->
       <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
         <div class="card text-center">
@@ -205,10 +219,157 @@ import { Subscription } from 'rxjs';
           </div>
         }
       </div>
+      } <!-- end dashboard tab -->
+
+      @if (activeTab === 'users') {
+        <!-- Users Tab -->
+        <div class="card">
+          <div class="flex items-center justify-between mb-4">
+            <h2 class="text-lg font-semibold text-white">Users</h2>
+            <input type="text" [(ngModel)]="userSearch" (ngModelChange)="searchUsers()"
+              placeholder="Search by email or name..." class="w-64 text-sm" />
+          </div>
+          @if (users.length === 0) {
+            <div class="text-gray-500">No users found.</div>
+          } @else {
+            <div class="overflow-x-auto">
+              <table class="w-full text-sm">
+                <thead>
+                  <tr class="text-gray-400 text-left border-b border-dark-700">
+                    <th class="pb-2">Email</th>
+                    <th class="pb-2">Name</th>
+                    <th class="pb-2">Status</th>
+                    <th class="pb-2">Admin</th>
+                    <th class="pb-2">Apps</th>
+                    <th class="pb-2">Joined</th>
+                    <th class="pb-2">Actions</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  @for (u of users; track u.id) {
+                    <tr class="border-b border-dark-800 text-gray-300">
+                      <td class="py-2">{{ u.email }}</td>
+                      <td>{{ u.firstName }} {{ u.lastName }}</td>
+                      <td>
+                        <span class="px-2 py-0.5 rounded text-xs"
+                          [class]="u.isActive ? 'bg-green-900/50 text-green-400' : 'bg-red-900/50 text-red-400'">
+                          {{ u.isActive ? 'Active' : 'Inactive' }}
+                        </span>
+                      </td>
+                      <td>
+                        <span class="px-2 py-0.5 rounded text-xs"
+                          [class]="u.isAdmin ? 'bg-purple-900/50 text-purple-400' : 'bg-dark-700 text-gray-500'">
+                          {{ u.isAdmin ? 'Admin' : 'User' }}
+                        </span>
+                      </td>
+                      <td>{{ u.applicationCount }}</td>
+                      <td>{{ u.createdAt | slice:0:10 }}</td>
+                      <td class="flex gap-2 py-2">
+                        <button (click)="toggleActive(u)" class="text-xs px-2 py-1 rounded transition-colors"
+                          [class]="u.isActive ? 'bg-red-900/30 text-red-400 hover:bg-red-900/50' : 'bg-green-900/30 text-green-400 hover:bg-green-900/50'">
+                          {{ u.isActive ? 'Deactivate' : 'Activate' }}
+                        </button>
+                        <button (click)="toggleAdmin(u)" class="text-xs px-2 py-1 rounded transition-colors"
+                          [class]="u.isAdmin ? 'bg-gray-700 text-gray-400 hover:bg-gray-600' : 'bg-purple-900/30 text-purple-400 hover:bg-purple-900/50'">
+                          {{ u.isAdmin ? 'Remove Admin' : 'Make Admin' }}
+                        </button>
+                      </td>
+                    </tr>
+                  }
+                </tbody>
+              </table>
+            </div>
+            @if (userTotalPages > 1) {
+              <div class="flex items-center justify-center gap-4 mt-4">
+                <button (click)="loadUsers(userPage - 1)" [disabled]="userPage === 0" class="btn-secondary text-sm">Previous</button>
+                <span class="text-gray-400 text-sm">Page {{ userPage + 1 }} of {{ userTotalPages }}</span>
+                <button (click)="loadUsers(userPage + 1)" [disabled]="userPage >= userTotalPages - 1" class="btn-secondary text-sm">Next</button>
+              </div>
+            }
+          }
+        </div>
+      }
+
+      @if (activeTab === 'jobs') {
+        <!-- Jobs Tab -->
+        <div class="card">
+          <div class="flex items-center justify-between mb-4">
+            <h2 class="text-lg font-semibold text-white">Job Management</h2>
+            <input type="text" [(ngModel)]="jobSearch" (ngModelChange)="searchJobs()"
+              placeholder="Search jobs..." class="w-64 text-sm" />
+          </div>
+          @if (adminJobs.length === 0) {
+            <div class="text-gray-500">No jobs found.</div>
+          } @else {
+            <div class="overflow-x-auto">
+              <table class="w-full text-sm">
+                <thead>
+                  <tr class="text-gray-400 text-left border-b border-dark-700">
+                    <th class="pb-2">Title</th>
+                    <th class="pb-2">Company</th>
+                    <th class="pb-2">Source</th>
+                    <th class="pb-2">Status</th>
+                    <th class="pb-2">Actions</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  @for (j of adminJobs; track j.id) {
+                    <tr class="border-b border-dark-800 text-gray-300">
+                      <td class="py-2 max-w-xs truncate">{{ j.title }}</td>
+                      <td>{{ j.company }}</td>
+                      <td>{{ j.source }}</td>
+                      <td>
+                        <span class="px-2 py-0.5 rounded text-xs"
+                          [class]="j.isActive !== false ? 'bg-green-900/50 text-green-400' : 'bg-red-900/50 text-red-400'">
+                          {{ j.isActive !== false ? 'Active' : 'Inactive' }}
+                        </span>
+                      </td>
+                      <td class="flex gap-2 py-2">
+                        <button (click)="toggleJobActive(j)" class="text-xs px-2 py-1 rounded bg-dark-700 text-gray-400 hover:text-white">
+                          {{ j.isActive !== false ? 'Deactivate' : 'Activate' }}
+                        </button>
+                        <button (click)="deleteAdminJob(j.id)" class="text-xs px-2 py-1 rounded bg-red-900/30 text-red-400 hover:bg-red-900/50">
+                          Delete
+                        </button>
+                      </td>
+                    </tr>
+                  }
+                </tbody>
+              </table>
+            </div>
+            @if (jobTotalPages > 1) {
+              <div class="flex items-center justify-center gap-4 mt-4">
+                <button (click)="loadAdminJobs(jobPage - 1)" [disabled]="jobPage === 0" class="btn-secondary text-sm">Previous</button>
+                <span class="text-gray-400 text-sm">Page {{ jobPage + 1 }} of {{ jobTotalPages }}</span>
+                <button (click)="loadAdminJobs(jobPage + 1)" [disabled]="jobPage >= jobTotalPages - 1" class="btn-secondary text-sm">Next</button>
+              </div>
+            }
+          }
+        </div>
+      }
     </div>
   `
 })
 export class AdminComponent implements OnInit, OnDestroy {
+  activeTab = 'dashboard';
+  adminTabs = [
+    { label: 'Dashboard', value: 'dashboard' },
+    { label: 'Users', value: 'users' },
+    { label: 'Jobs', value: 'jobs' }
+  ];
+
+  // Users tab
+  users: UserListDto[] = [];
+  userSearch = '';
+  userPage = 0;
+  userTotalPages = 0;
+
+  // Jobs tab
+  adminJobs: any[] = [];
+  jobSearch = '';
+  jobPage = 0;
+  jobTotalPages = 0;
+
   overview: any = null;
   scrapeStatus: any = null;
   scrapeRunning = false;
@@ -227,7 +388,11 @@ export class AdminComponent implements OnInit, OnDestroy {
   private wsSub?: Subscription;
   private progressSub?: Subscription;
 
-  constructor(private http: HttpClient, private wsService: WebSocketService) {}
+  constructor(
+    private http: HttpClient,
+    private wsService: WebSocketService,
+    private adminService: AdminService
+  ) {}
 
   ngOnInit() {
     this.loadOverview();
@@ -306,6 +471,61 @@ export class AdminComponent implements OnInit, OnDestroy {
         }, 2000);
       },
       error: () => { this.scrapeRunning = false; }
+    });
+  }
+
+  // Users management
+  loadUsers(page: number = 0) {
+    this.userPage = page;
+    this.adminService.getUsers(page, 20, this.userSearch || undefined).subscribe(res => {
+      this.users = res.content;
+      this.userTotalPages = res.totalPages;
+    });
+  }
+
+  searchUsers() {
+    this.userPage = 0;
+    this.loadUsers(0);
+  }
+
+  toggleActive(user: UserListDto) {
+    this.adminService.toggleUserActive(user.id, !user.isActive).subscribe(() => {
+      user.isActive = !user.isActive;
+    });
+  }
+
+  toggleAdmin(user: UserListDto) {
+    this.adminService.toggleUserAdmin(user.id, !user.isAdmin).subscribe(() => {
+      user.isAdmin = !user.isAdmin;
+    });
+  }
+
+  // Jobs management
+  loadAdminJobs(page: number = 0) {
+    this.jobPage = page;
+    let params: any = { page, size: 20, sortBy: 'dateScraped', sortDir: 'desc' };
+    if (this.jobSearch) params.search = this.jobSearch;
+    this.http.get<any>(`${this.api}/api/jobs`, { params }).subscribe(res => {
+      this.adminJobs = res.content || [];
+      this.jobTotalPages = res.totalPages || 0;
+    });
+  }
+
+  searchJobs() {
+    this.jobPage = 0;
+    this.loadAdminJobs(0);
+  }
+
+  toggleJobActive(job: any) {
+    const newActive = job.isActive === false ? true : false;
+    this.adminService.updateJob(job.id, { isActive: newActive }).subscribe(() => {
+      job.isActive = newActive;
+    });
+  }
+
+  deleteAdminJob(jobId: number) {
+    this.adminService.deleteJob(jobId).subscribe(() => {
+      this.adminJobs = this.adminJobs.filter(j => j.id !== jobId);
     });
   }
 }

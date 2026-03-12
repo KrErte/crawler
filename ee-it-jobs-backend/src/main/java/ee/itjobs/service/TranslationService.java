@@ -1,19 +1,17 @@
 package ee.itjobs.service;
 
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
 import org.springframework.web.reactive.function.client.WebClient;
 
 import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
 
 @Service
 @Slf4j
 public class TranslationService {
 
     private final WebClient webClient;
-    private final Map<String, String> cache = new ConcurrentHashMap<>();
-    private static final int MAX_CACHE_SIZE = 5000;
 
     public TranslationService() {
         this.webClient = WebClient.builder()
@@ -21,20 +19,13 @@ public class TranslationService {
                 .build();
     }
 
-    /**
-     * Translate text between Estonian and English using MyMemory free API.
-     * Free tier: 5000 chars/day without key, 50000 with email registration.
-     */
+    @Cacheable(value = "job-translations", key = "{#sourceLang, #targetLang, #text?.hashCode()}")
     public String translate(String text, String sourceLang, String targetLang) {
         if (text == null || text.isBlank()) return text;
         if (sourceLang.equals(targetLang)) return text;
 
         // Truncate very long texts
         String input = text.length() > 500 ? text.substring(0, 500) : text;
-
-        String cacheKey = sourceLang + ":" + targetLang + ":" + input.hashCode();
-        String cached = cache.get(cacheKey);
-        if (cached != null) return cached;
 
         try {
             String langPair = mapLang(sourceLang) + "|" + mapLang(targetLang);
@@ -56,9 +47,6 @@ public class TranslationService {
                     .block();
 
             if (result != null && !result.isBlank()) {
-                if (cache.size() < MAX_CACHE_SIZE) {
-                    cache.put(cacheKey, result);
-                }
                 return result;
             }
         } catch (Exception e) {

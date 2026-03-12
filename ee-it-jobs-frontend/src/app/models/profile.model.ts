@@ -1,3 +1,9 @@
+export interface NotificationPreferences {
+  workplaceTypes: string[];
+  jobTypes: string[];
+  minSalary: number | null;
+}
+
 export interface Profile {
   firstName: string;
   lastName: string;
@@ -7,6 +13,7 @@ export interface Profile {
   coverLetter: string;
   skills: string[];
   preferences: any;
+  notificationPreferences: NotificationPreferences | null;
   cvRawText: string;
   yearsExperience: number | null;
   roleLevel: string | null;
@@ -34,4 +41,5 @@ export interface ProfileUpdateRequest {
   coverLetter: string;
   emailAlerts?: boolean;
   alertThreshold?: number;
+  notificationPreferences?: NotificationPreferences;
 }

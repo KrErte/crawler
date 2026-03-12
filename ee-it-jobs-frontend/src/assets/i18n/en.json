@@ -178,6 +178,10 @@
   "notifications.workplace": "Workplace",
   "notifications.minSalary": "Minimum Salary",
   "notifications.skills": "Skills to Track",
+  "notifications.alertPrefs": "Alert Preferences",
+  "notifications.workplaceType": "Workplace Type",
+  "notifications.jobType": "Job Type",
+  "notifications.minSalaryLabel": "Minimum Salary (EUR)",
 
   "toast.sessionExpired": "Session expired. Please log in again.",
   "toast.serverError": "Server error. Please try again later.",

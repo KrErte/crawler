@@ -3,7 +3,7 @@ import { FormsModule } from '@angular/forms';
 import { ProfileService } from '../../services/profile.service';
 import { AuthService } from '../../services/auth.service';
 import { NotificationService } from '../../services/notification.service';
-import { Profile, CvAnalysis } from '../../models/profile.model';
+import { Profile, CvAnalysis, NotificationPreferences } from '../../models/profile.model';
 import { SkeletonComponent } from '../../components/skeleton/skeleton.component';
 
 @Component({
@@ -94,6 +94,43 @@ import { SkeletonComponent } from '../../components/skeleton/skeleton.component'
                 class="w-full" />
               <div class="flex justify-between text-xs text-gray-600 mt-1">
                 <span>30%</span><span>95%</span>
+              </div>
+            </div>
+
+            <!-- Notification Preferences -->
+            <div class="border-t border-dark-700 pt-4 mt-4">
+              <h3 class="text-sm font-semibold text-white mb-3">Alert Preferences</h3>
+
+              <div class="mb-4">
+                <label class="block text-sm text-gray-400 mb-2">Workplace Type</label>
+                <div class="flex flex-wrap gap-3">
+                  @for (wt of workplaceOptions; track wt) {
+                    <label class="flex items-center gap-2 cursor-pointer">
+                      <input type="checkbox" [checked]="isWorkplaceSelected(wt)"
+                        (change)="toggleWorkplace(wt)" class="w-4 h-4 rounded" />
+                      <span class="text-gray-300 text-sm">{{ wt }}</span>
+                    </label>
+                  }
+                </div>
+              </div>
+
+              <div class="mb-4">
+                <label class="block text-sm text-gray-400 mb-2">Job Type</label>
+                <div class="flex flex-wrap gap-3">
+                  @for (jt of jobTypeOptions; track jt) {
+                    <label class="flex items-center gap-2 cursor-pointer">
+                      <input type="checkbox" [checked]="isJobTypeSelected(jt)"
+                        (change)="toggleJobType(jt)" class="w-4 h-4 rounded" />
+                      <span class="text-gray-300 text-sm">{{ jt }}</span>
+                    </label>
+                  }
+                </div>
+              </div>
+
+              <div>
+                <label class="block text-sm text-gray-400 mb-1">Minimum Salary (EUR)</label>
+                <input type="number" [ngModel]="notifPrefs.minSalary" (ngModelChange)="onMinSalaryChange($event)"
+                  placeholder="e.g. 2000" min="0" step="100" class="w-48" />
               </div>
             </div>
           }
@@ -285,6 +322,11 @@ export class ProfileComponent implements OnInit {
   cvAnalysis: CvAnalysis | null = null;
   cvAnalysisLoading = false;
 
+  // Notification preferences
+  workplaceOptions = ['Remote', 'Hybrid', 'Onsite'];
+  jobTypeOptions = ['Full-time', 'Part-time', 'Contract'];
+  notifPrefs: NotificationPreferences = { workplaceTypes: [], jobTypes: [], minSalary: null };
+
   // 2FA
   totpEnabled = false;
   qrCodeUri = '';
@@ -305,6 +347,7 @@ export class ProfileComponent implements OnInit {
       next: (p) => {
         this.profile = p;
         this.totpEnabled = (p as any).totpEnabled || false;
+        this.notifPrefs = p.notificationPreferences || { workplaceTypes: [], jobTypes: [], minSalary: null };
         this.loading = false;
         if (p.hasCv) {
           this.loadCvAnalysis();
@@ -404,6 +447,53 @@ export class ProfileComponent implements OnInit {
 
   disableNotifications() {
     this.notificationService.disable();
+  }
+
+  isWorkplaceSelected(wt: string): boolean {
+    return this.notifPrefs.workplaceTypes.includes(wt);
+  }
+
+  toggleWorkplace(wt: string) {
+    const idx = this.notifPrefs.workplaceTypes.indexOf(wt);
+    if (idx >= 0) {
+      this.notifPrefs.workplaceTypes.splice(idx, 1);
+    } else {
+      this.notifPrefs.workplaceTypes.push(wt);
+    }
+    this.saveNotifPrefs();
+  }
+
+  isJobTypeSelected(jt: string): boolean {
+    return this.notifPrefs.jobTypes.includes(jt);
+  }
+
+  toggleJobType(jt: string) {
+    const idx = this.notifPrefs.jobTypes.indexOf(jt);
+    if (idx >= 0) {
+      this.notifPrefs.jobTypes.splice(idx, 1);
+    } else {
+      this.notifPrefs.jobTypes.push(jt);
+    }
+    this.saveNotifPrefs();
+  }
+
+  onMinSalaryChange(value: number | null) {
+    this.notifPrefs.minSalary = value;
+    this.saveNotifPrefs();
+  }
+
+  private saveNotifPrefs() {
+    if (!this.profile) return;
+    this.profileService.updateProfile({
+      firstName: this.profile.firstName,
+      lastName: this.profile.lastName,
+      phone: this.profile.phone,
+      linkedinUrl: this.profile.linkedinUrl,
+      coverLetter: this.profile.coverLetter,
+      emailAlerts: this.profile.emailAlerts,
+      alertThreshold: this.profile.alertThreshold,
+      notificationPreferences: this.notifPrefs
+    }).subscribe();
   }
 
   setup2fa() {

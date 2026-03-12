@@ -11,4 +11,5 @@ public interface ApplicationRepository extends JpaRepository<Application, Long> 
     List<Application> findByUserIdAndStatusOrderByAppliedAtDesc(Long userId, ApplicationStatus status);
     Optional<Application> findByUserIdAndJobId(Long userId, Long jobId);
     boolean existsByUserIdAndJobId(Long userId, Long jobId);
+    long countByUserId(Long userId);
 }

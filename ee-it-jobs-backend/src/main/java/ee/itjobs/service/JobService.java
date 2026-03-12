@@ -65,6 +65,7 @@ public class JobService {
         return getJobs(search, company, source, workplaceType, jobType, null, null, null, sortBy, sortDir, page, size);
     }
 
+    @Cacheable(value = "job-search", key = "{#search, #company, #source, #workplaceType, #jobType, #skills, #salaryMin, #salaryMax, #sortBy, #sortDir, #page, #size}")
     public Page<JobDto> getJobs(String search, String company, String source,
                                  String workplaceType, String jobType,
                                  List<String> skills, Integer salaryMin, Integer salaryMax,
@@ -106,6 +107,7 @@ public class JobService {
         return jobRepository.findAll(spec, pageable).map(jobMapper::toDto);
     }
 
+    @Cacheable(value = "job-by-id", key = "#id")
     public JobDto getJob(Long id) {
         Job job = jobRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Job not found"));

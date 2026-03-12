@@ -28,6 +28,6 @@ export const routeAnimation = trigger('routeAnimation', [
 })
 export class AppComponent {
   getRouteState(outlet: RouterOutlet) {
-    return outlet?.activatedRouteData?.['animation'] || outlet?.activatedRoute?.snapshot?.url?.toString() || '';
+    return outlet?.isActivated ? (outlet.activatedRouteData?.['animation'] || outlet.activatedRoute?.snapshot?.url?.toString() || '') : '';
   }
 }

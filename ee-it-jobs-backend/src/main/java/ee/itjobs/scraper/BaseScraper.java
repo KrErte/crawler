@@ -16,6 +16,9 @@ import java.util.Map;
 @Slf4j
 public abstract class BaseScraper {
 
+    private static final int MAX_RETRIES = 3;
+    private static final long INITIAL_BACKOFF_MS = 1000;
+
     protected final WebClient webClient;
     protected final RateLimiter rateLimiter;
     protected final ObjectMapper objectMapper;
@@ -49,30 +52,58 @@ public abstract class BaseScraper {
     protected abstract List<Job> scrape() throws Exception;
 
     protected String fetchPage(String url) {
-        rateLimiter.acquire();
-        log.debug("[{}] Fetching {}", getName(), url);
-        return webClient.get()
-                .uri(url)
-                .retrieve()
-                .bodyToMono(String.class)
-                .block();
+        return fetchWithRetry(url, () -> {
+            rateLimiter.acquire();
+            log.debug("[{}] Fetching {}", getName(), url);
+            return webClient.get()
+                    .uri(url)
+                    .retrieve()
+                    .bodyToMono(String.class)
+                    .block();
+        });
     }
 
     protected JsonNode fetchJson(String url) {
-        rateLimiter.acquire();
-        log.debug("[{}] Fetching JSON {}", getName(), url);
-        String body = webClient.get()
-                .uri(url)
-                .header("Accept", "application/json")
-                .retrieve()
-                .bodyToMono(String.class)
-                .block();
+        String body = fetchWithRetry(url, () -> {
+            rateLimiter.acquire();
+            log.debug("[{}] Fetching JSON {}", getName(), url);
+            return webClient.get()
+                    .uri(url)
+                    .header("Accept", "application/json")
+                    .retrieve()
+                    .bodyToMono(String.class)
+                    .block();
+        });
         try {
             return objectMapper.readTree(body);
         } catch (Exception e) {
             log.error("[{}] Failed to parse JSON from {}", getName(), url, e);
             return objectMapper.createObjectNode();
         }
+    }
+
+    private <T> T fetchWithRetry(String url, java.util.concurrent.Callable<T> action) {
+        Exception lastException = null;
+        for (int attempt = 1; attempt <= MAX_RETRIES; attempt++) {
+            try {
+                return action.call();
+            } catch (Exception e) {
+                lastException = e;
+                if (attempt < MAX_RETRIES) {
+                    long delay = INITIAL_BACKOFF_MS * (1L << (attempt - 1));
+                    log.warn("[{}] Fetch attempt {}/{} failed for {}, retrying in {}ms: {}",
+                            getName(), attempt, MAX_RETRIES, url, delay, e.getMessage());
+                    try {
+                        Thread.sleep(delay);
+                    } catch (InterruptedException ie) {
+                        Thread.currentThread().interrupt();
+                        throw new RuntimeException("Retry interrupted", ie);
+                    }
+                }
+            }
+        }
+        log.error("[{}] All {} retries exhausted for {}", getName(), MAX_RETRIES, url);
+        throw new RuntimeException("Failed after " + MAX_RETRIES + " retries: " + url, lastException);
     }
 
     protected Document parseHtml(String html) {

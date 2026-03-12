@@ -10,6 +10,7 @@ import ee.itjobs.repository.ApplicationRepository;
 import ee.itjobs.repository.JobRepository;
 import ee.itjobs.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
 
 import java.util.*;
@@ -24,6 +25,7 @@ public class RecommendationService {
     private final JobRepository jobRepository;
     private final JobMapper jobMapper;
 
+    @Cacheable(value = "recommendations", key = "{#email, #limit}")
     public List<JobDto> getRecommendations(String email, int limit) {
         User user = userRepository.findByEmail(email)
                 .orElseThrow(() -> new ResourceNotFoundException("User not found"));

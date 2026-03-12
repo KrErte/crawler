@@ -41,6 +41,7 @@ spring:
 
 server:
   port: 8080
+  forward-headers-strategy: native
 
 app:
   jwt:
@@ -49,7 +50,7 @@ app:
     refresh-expiration-ms: 604800000  # 7 days
 
   cors:
-    allowed-origins: "http://localhost:4200,http://localhost:8080"
+    allowed-origins: ${APP_CORS_ORIGINS:http://localhost:4200,http://localhost:8080}
 
   scraper:
     rate-limit: 2.0

@@ -135,6 +135,7 @@ spring:
 
 server:
   port: 8080
+  forward-headers-strategy: native
 
 app:
   jwt:
@@ -143,7 +144,10 @@ app:
     refresh-expiration-ms: 604800000
 
   cors:
-    allowed-origins: "http://{HOST},http://{HOST}:80,http://{HOST}:8080"
+    allowed-origins: "http://{HOST},https://{HOST},http://{HOST}:80,http://{HOST}:8080"
+
+  base-url: http://{HOST}
+  mail-from: noreply@eeitjobs.ee
 
   scraper:
     rate-limit: 2.0

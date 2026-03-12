@@ -4,6 +4,7 @@ import ee.itjobs.entity.Job;
 import ee.itjobs.entity.ScrapeRun;
 import ee.itjobs.repository.ScrapeRunRepository;
 import ee.itjobs.scraper.BaseScraper;
+import ee.itjobs.scraper.CircuitBreaker;
 import ee.itjobs.scraper.ScrapeResult;
 import ee.itjobs.scraper.ScraperRegistry;
 import lombok.RequiredArgsConstructor;
@@ -16,6 +17,7 @@ import org.springframework.stereotype.Service;
 import java.time.LocalDateTime;
 import java.util.*;
 import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -36,6 +38,7 @@ public class ScrapeOrchestratorService {
     private int maxConcurrency;
 
     private final AtomicBoolean isRunning = new AtomicBoolean(false);
+    private final Map<String, CircuitBreaker> circuitBreakers = new ConcurrentHashMap<>();
 
     public boolean isRunning() {
         return isRunning.get();
@@ -98,7 +101,27 @@ public class ScrapeOrchestratorService {
 
         List<CompletableFuture<Void>> futures = scrapers.stream()
                 .map(scraper -> CompletableFuture.runAsync(() -> {
+                    CircuitBreaker cb = circuitBreakers.computeIfAbsent(
+                            scraper.getName(), CircuitBreaker::new);
+
+                    if (!cb.allowRequest()) {
+                        log.warn("[{}] Circuit breaker OPEN, skipping scraper", scraper.getName());
+                        Map<String, Object> stats = new LinkedHashMap<>();
+                        stats.put("skipped", true);
+                        stats.put("circuitState", cb.getState().name());
+                        sourceStats.put(scraper.getName(), stats);
+                        return;
+                    }
+
                     ScrapeResult result = scraper.run();
+
+                    if (!result.getErrors().isEmpty()) {
+                        cb.recordFailure();
+                        log.info("[{}] Circuit breaker state: {}", scraper.getName(), cb.getState());
+                    } else {
+                        cb.recordSuccess();
+                    }
+
                     int newCount = 0;
                     for (Job job : result.getJobs()) {
                         if (!JobService.isItRelated(job.getTitle(), job.getDepartment())) {
@@ -119,6 +142,7 @@ public class ScrapeOrchestratorService {
                     stats.put("new", newCount);
                     stats.put("errors", result.getErrors().size());
                     stats.put("duration", result.getDurationSeconds());
+                    stats.put("circuitState", cb.getState().name());
                     sourceStats.put(scraper.getName(), stats);
                 }, executor))
                 .toList();
